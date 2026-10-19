@@ -49,6 +49,22 @@ def rrect(size, radius, fill, outline=None, width=0, inset=0):
     return img.resize(size, Image.LANCZOS)
 
 
+def add_sheen(img, radius, alpha=26, inset=3):
+    """V0.5：面板内侧顶部一道很淡的冷白高光，让对话框 / 姓名框 / 按钮的质感一致。"""
+    w, h = img.size
+    layer = Image.new("RGBA", (w * SS, h * SS), (0, 0, 0, 0))
+    d = ImageDraw.Draw(layer)
+    d.rounded_rectangle([inset * SS, inset * SS, (w - inset) * SS - 1, (h - inset) * SS - 1], radius=max(2, radius - inset) * SS,
+                        outline=(220, 240, 248, alpha), width=SS)
+    mask = Image.new("L", (w * SS, h * SS), 0)
+    ImageDraw.Draw(mask).rectangle([0, 0, w * SS, int(h * SS * 0.42)], fill=255)
+    mask = mask.filter(ImageFilter.GaussianBlur(h * SS * 0.12))
+    layer.putalpha(ImageChops.multiply(layer.split()[3], mask))
+    out = img.copy()
+    out.alpha_composite(layer.resize((w, h), Image.LANCZOS))
+    return out
+
+
 def glow_around(size, radius, color, alpha, blur):
     """圆角矩形外发光层（用于悬停态）。"""
     w, h = size
@@ -83,13 +99,20 @@ def make_textbox(W=1280, H=260):
     for y in range(top):
         fade.putpixel((0, y), int(150 * (y / top) ** 1.6))
     img.paste(Image.new("RGBA", (W, top), rgba(NAVY0)), (0, 0), fade.resize((W, top)))
-    body = Image.new("RGBA", (W, H - top), rgba(NAVY1, 236))
+    body = Image.new("RGBA", (W, H - top), rgba(NAVY1, 224))
     # 底部更深
     shade = Image.new("L", (1, H - top))
     for y in range(H - top):
         shade.putpixel((0, y), int(70 * (y / (H - top))))
     body.paste(Image.new("RGBA", body.size, rgba(NAVY0)), (0, 0), shade.resize(body.size))
     img.paste(body, (0, top))
+    # V0.5：顶边下方一层冷青微光，与姓名框 / 按钮的高光呼应
+    wash = Image.new("L", (1, 46))
+    for y in range(46):
+        wash.putpixel((0, y), int(34 * (1 - y / 46) ** 2))
+    cyan_wash = Image.new("RGBA", (W, 46), rgba(CYAN))
+    cyan_wash.putalpha(wash.resize((W, 46)))
+    img.alpha_composite(cyan_wash, (0, top + 2))
     d = ImageDraw.Draw(img)
     d.rectangle([0, top, W, top + 1], fill=rgba(CYAN, 150))
     # 灯光暖金短线：落在右侧，提示“灯塔”意象
@@ -98,9 +121,10 @@ def make_textbox(W=1280, H=260):
 
 
 def make_namebox(W=300, H=64):
-    base = rrect((W, H), 12, rgba(NAVY2, 245), rgba(CYAN, 210), 2)
+    base = rrect((W, H), 16, rgba(NAVY2, 245), rgba(CYAN, 210), 2)
+    base = add_sheen(base, 16)
     d = ImageDraw.Draw(base)
-    d.rounded_rectangle([0, 0, 9, H - 1], radius=4, fill=rgba(GOLD))
+    d.rounded_rectangle([0, 10, 8, H - 11], radius=4, fill=rgba(GOLD))
     return base
 
 
@@ -112,10 +136,14 @@ def make_choice(hover, W=800, H=96):
     else:
         img = Image.new("RGBA", (W, H), (0, 0, 0, 0))
         face = rrect((W - 24, H - 24), 16, rgba(NAVY2, 232), rgba(CYAN, 200), 2)
+    face = add_sheen(face, 16)
     img.alpha_composite(face, (12, 12))
     d = ImageDraw.Draw(img)
     # 左侧小灯点
     cx, cy = 44, H // 2
+    dot = glow_around((44, 44), 22, GOLD if hover else CYAN, 150 if hover else 90, 12)
+    img.alpha_composite(dot, (cx - 22, cy - 22))
+    d = ImageDraw.Draw(img)
     d.ellipse([cx - 6, cy - 6, cx + 6, cy + 6], fill=rgba(GOLD if hover else CYAN))
     return img
 
@@ -124,8 +152,8 @@ def make_quick(hover, W=120, H=80):
     if hover:
         img = rrect((W, H), 16, rgba(NAVY3, 245), rgba(GOLD), 3)
     else:
-        img = rrect((W, H), 16, rgba(NAVY2, 205), rgba(CYAN, 150), 2)
-    return img
+        img = rrect((W, H), 16, rgba(NAVY2, 214), rgba(CYAN, 165), 2)
+    return add_sheen(img, 16)
 
 
 def make_nav(hover, selected=False, W=420, H=80):
@@ -261,7 +289,7 @@ def vignette(img, strength=0.55):
 
 def make_main_menu_bg():
     base = Image.open(os.path.join(IMG, "bg_lighthouse.png")).convert("RGB")
-    img = darken_with_navy(base, 0.38)
+    img = darken_with_navy(base, 0.20)
     img = vignette(img, 0.7)
     return img
 
