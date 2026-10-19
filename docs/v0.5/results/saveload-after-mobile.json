@@ -1,0 +1,12 @@
+{
+  "ui": "after",
+  "viewport": "mobile",
+  "url": "http://127.0.0.1:8002/index.html",
+  "results": [
+    {
+      "name": "after/mobile 存档 -> 刷新页面 -> 读档 -> 按 +0/+0 通关",
+      "ok": true,
+      "detail": "读档后到达结局=2（期望 2；信任度未恢复则会是 3）；页面错误/失败请求=0"
+    }
+  ]
+}

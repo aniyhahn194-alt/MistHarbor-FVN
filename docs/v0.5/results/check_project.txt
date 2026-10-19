@@ -1,0 +1,2 @@
+静态检查通过：9 个 label，15 个图像，2 个角色，8 个 default 变量。
+check_project exit 0

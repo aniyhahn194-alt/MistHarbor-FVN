@@ -1,0 +1,27 @@
+{
+  "ui": "after",
+  "viewport": "mobile",
+  "url": "http://127.0.0.1:8002/index.html",
+  "results": [
+    {
+      "name": "after/mobile 加载画面",
+      "ok": true,
+      "detail": "页面 presplash：{\"src\":\"web-presplash.png\",\"display\":\"block\",\"naturalWidth\":1600,\"naturalHeight\":900,\"complete\":true}；捕捉到页面 presplash 帧=true；捕捉到游戏内 splash 帧=true（before 构建没有 splash，期望 false）"
+    },
+    {
+      "name": "after/mobile 分支 A_true（选项 1/1/1）",
+      "ok": true,
+      "detail": "到达结局卡片=1（期望 1）；回到主菜单=true；页面错误/失败请求=0；首次到主菜单 12.2s"
+    },
+    {
+      "name": "after/mobile 分支 B_half（选项 2/2/2）",
+      "ok": true,
+      "detail": "到达结局卡片=2（期望 2）；回到主菜单=true；页面错误/失败请求=0；首次到主菜单 13.3s"
+    },
+    {
+      "name": "after/mobile 分支 C_miss（选项 3/3/3）",
+      "ok": true,
+      "detail": "到达结局卡片=3（期望 3）；回到主菜单=true；页面错误/失败请求=0；首次到主菜单 13.0s"
+    }
+  ]
+}
