@@ -99,7 +99,7 @@ def make_textbox(W=1280, H=260):
     for y in range(top):
         fade.putpixel((0, y), int(150 * (y / top) ** 1.6))
     img.paste(Image.new("RGBA", (W, top), rgba(NAVY0)), (0, 0), fade.resize((W, top)))
-    body = Image.new("RGBA", (W, H - top), rgba(NAVY1, 224))
+    body = Image.new("RGBA", (W, H - top), rgba(NAVY1, 244))
     # 底部更深
     shade = Image.new("L", (1, H - top))
     for y in range(H - top):

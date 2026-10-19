@@ -3,7 +3,7 @@
 
   apply-presplash <项目目录> <产物目录>
       把项目根目录的 web-presplash.(png|jpg|webp) 放进产物，删除 Ren'Py 默认的 web-presplash.jpg，
-      改写 index.html / pwa_catalog.json 的引用，并按 Launcher 的方式重新生成 <产物目录>.zip。
+      改写 index.html / pwa_catalog.json 的引用，给加载状态条注入一小段 CSS 外观覆盖，并按 Launcher 的方式重新生成 <产物目录>.zip。
       （官方 CLI web_build 在这一步有 bug，见 tools/build_web.sh 里的说明；Launcher 图形界面没有。）
   check <项目目录> <产物目录>
       校验：index.html 引用的 presplash 存在且与项目文件逐字节一致；默认 presplash 已被替换；
@@ -16,6 +16,17 @@ import re
 import shutil
 import sys
 import zipfile
+
+SKIN_MARK = "mistharbor-web-skin"
+## 只覆盖 index.html 顶部“加载状态条”的外观（默认是黑底 + 浏览器原生蓝色进度条）与页面底色，使其与夜雾港口风格一致。
+## 没有改动任何脚本 / 加载逻辑。
+SKIN_CSS = """  <style id="mistharbor-web-skin">
+    html, body { background: #05080d; }
+    #statusDiv { background: rgba(6, 12, 22, 0.86); border-bottom: 1px solid rgba(95, 184, 196, 0.55); border-radius: 0 0 10px 10px; }
+    #statusTextDiv { color: #9fc4cf; letter-spacing: 0.04em; }
+    #statusProgress { accent-color: #f3c677; }
+    #ContextButton { color: rgba(159, 196, 207, 0.8); }
+  </style>"""
 
 NAMES = ["web-presplash.png", "web-presplash.jpg", "web-presplash.webp"]
 
@@ -40,6 +51,8 @@ def apply_presplash(project, out):
     with open(idx, encoding="utf-8") as f:
         html = f.read()
     html = html.replace("web-presplash.jpg", name)
+    if SKIN_MARK not in html:
+        html = html.replace("</head>", SKIN_CSS + "\n</head>", 1)
     with open(idx, "w", encoding="utf-8") as f:
         f.write(html)
     cat = os.path.join(out, "pwa_catalog.json")
@@ -78,6 +91,8 @@ def check(project, out):
                     errs.append("产物里的 %s 与项目文件不一致" % ref)
         if name != "web-presplash.jpg" and os.path.exists(os.path.join(out, "web-presplash.jpg")):
             errs.append("产物里仍有 Ren'Py 默认 web-presplash.jpg")
+        if SKIN_MARK not in html:
+            errs.append("index.html 缺少加载状态条样式（%s）" % SKIN_MARK)
     with zipfile.ZipFile(os.path.join(out, "game.zip")) as zf:
         names = zf.namelist()
     for n in names:

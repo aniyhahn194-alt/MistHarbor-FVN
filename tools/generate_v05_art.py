@@ -325,14 +325,14 @@ def bg_lighthouse():
     img = vgrad((W, H), [(0, (4, 8, 20)), (0.5, (14, 34, 56)), (0.59, (38, 78, 98)), (0.5901, (14, 36, 54)), (1, (5, 12, 22))])
     img = stars(img, 5, 150, 440, (1, 1, 2, 2, 3))
     # 月亮（左）与月晕
-    img = add_glow(img, (560, 150), 240, (110, 170, 190), 0.5)
+    img = add_glow(img, (900, 150), 240, (110, 170, 190), 0.5)
     d = ImageDraw.Draw(img)
-    d.ellipse([524, 114, 596, 186], fill=(222, 236, 234))
-    img = add_glow(img, (560, 150), 80, (170, 214, 220), 0.4)
+    d.ellipse([864, 114, 936, 186], fill=(222, 236, 234))
+    img = add_glow(img, (900, 150), 80, (170, 214, 220), 0.4)
     horizon = 640
     sea = vgrad((W, H - horizon), [(0, (24, 56, 76)), (0.4, (10, 28, 44)), (1, (5, 12, 22))])
     img.paste(sea, (0, horizon))
-    img = light_streaks(img, 560, horizon + 10, horizon + 250, (120, 170, 180), 5, spread=60, count=22, alpha=130)
+    img = light_streaks(img, 900, horizon + 10, horizon + 250, (120, 170, 180), 5, spread=60, count=22, alpha=130)
     # 灯塔（右侧，主视觉）
     tx = 1200
     d = ImageDraw.Draw(img)
