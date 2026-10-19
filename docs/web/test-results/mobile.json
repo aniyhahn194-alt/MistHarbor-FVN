@@ -1,0 +1,16 @@
+{
+  "chrome": "/usr/local/bin/google-chrome",
+  "url": "http://127.0.0.1:8000/index.html",
+  "results": [
+    {
+      "name": "手机视口模拟（landscape 844x390，触控，iPhone UA；桌面 Chromium）",
+      "ok": true,
+      "detail": "主菜单 7.4s；触控点按开始游戏/推进/选项=true；页面错误=0"
+    },
+    {
+      "name": "手机视口模拟（portrait 390x844，触控，iPhone UA；桌面 Chromium）",
+      "ok": true,
+      "detail": "主菜单 7.9s；触控点按开始游戏/推进/选项=true；页面错误=0"
+    }
+  ]
+}

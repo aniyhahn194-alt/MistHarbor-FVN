@@ -1,0 +1,16 @@
+{
+  "chrome": "/usr/local/bin/google-chrome",
+  "url": "http://127.0.0.1:8000/index.html",
+  "results": [
+    {
+      "name": "限速加载 Fast4G（桌面 Chromium 限速模拟，缓存禁用，service worker 禁用）",
+      "ok": true,
+      "detail": "到主菜单约 46s（含 ~2s 画面稳定判定）；传输 43.3 MiB；服务器压缩=否_原始未压缩"
+    },
+    {
+      "name": "限速加载 Slow4G（桌面 Chromium 限速模拟，缓存禁用，service worker 禁用）",
+      "ok": true,
+      "detail": "到主菜单约 222s（含 ~2s 画面稳定判定）；传输 42.8 MiB；服务器压缩=否_原始未压缩"
+    }
+  ]
+}
