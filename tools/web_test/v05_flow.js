@@ -5,11 +5,13 @@
 // 重要：这是【桌面 Chromium】（含视口 / 触控 / iPhone UA 模拟），不是真实手机，更不是 iOS Safari。
 //
 // 用法：
-//   node v02_flow.js compare  --ui v01|v02 --viewport desktop|mobile --url http://127.0.0.1:8002/index.html --out <目录>
-//   node v02_flow.js saveload --ui v02 --viewport desktop|mobile --url ... --out <目录>
+//   node v05_flow.js compare  --ui before|after --viewport desktop|mobile|mobile932|mobile667 --url http://127.0.0.1:8002/index.html --out <目录> [--only A,B,C]
+//   node v05_flow.js saveload --ui after --viewport desktop|mobile ... --url ... --out <目录>
+//   视口：desktop = 1280x720；mobile = 844x390；mobile932 = 932x430；mobile667 = 667x375（均为 DPR 2、触控、iPhone UA 的桌面 Chromium 模拟）
 // compare：从主菜单开始，真实点击/按键走完 3 条分支（选项 1/1/1、2/2/2、3/3/3），沿途保存
-//          主菜单 / 对话 / 三次选项 / 三个结局卡片 / 返回主菜单 的截图，并核对到达的结局。
+//          加载画面 / 主菜单 / 三段对话 / 三次选项 / 三个结局对白与结局卡片 的截图，并核对到达的结局。
 // saveload：第一个选项后在第二次选择处存档 -> 刷新页面 -> 读档 -> 按 +0/+0 通关，应到达结局二（信任度 2 被恢复）。
+
 const { chromium } = require('playwright-core');
 const { PNG } = require('pngjs');
 const fs = require('fs');
@@ -25,11 +27,12 @@ const URL = opt('url', 'http://127.0.0.1:8002/index.html');
 const OUT = path.resolve(opt('out', 'shots'));
 fs.mkdirSync(OUT, { recursive: true });
 
-const MOBILE = VP === 'mobile';
+const MOBILE = VP.startsWith('mobile');
+const MOBILE_SIZES = { mobile: [844, 390], mobile932: [932, 430], mobile667: [667, 375] };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const IPHONE_UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1';
 const ctxOpts = MOBILE
-  ? { viewport: { width: 844, height: 390 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, userAgent: IPHONE_UA }
+  ? { viewport: { width: MOBILE_SIZES[VP][0], height: MOBILE_SIZES[VP][1] }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, userAgent: IPHONE_UA }
   : { viewport: { width: 1280, height: 720 } };
 
 // 各版本界面里的点击坐标（游戏逻辑坐标 1280x720）
@@ -122,6 +125,8 @@ function isMainMenu(img, page) {
 }
 
 // 加载阶段取帧：页面 presplash 阶段 / 游戏内 splash 阶段（V0.5 才有）。返回 {presplash, splash, info}
+// 主菜单有持续的光束 / 雾漂移动画，相邻 1 秒的帧约有 3%（≈3 万像素 @1280x720）不同；超过 ~9% 才算“还在转场”
+const STABLE_PX = 80000;
 const SPLASH_RECT = [380, 150, 900, 330];   // 游戏坐标：splash 标题“雾港来信”所在区域（金色字）
 async function waitMainMenu(page, timeoutMs = 300000, loadingCapture = false) {
   const t0 = Date.now();
@@ -142,7 +147,7 @@ async function waitMainMenu(page, timeoutMs = 300000, loadingCapture = false) {
       const preVisible = dom && dom.display !== 'none';
       if (!preVisible && gold > 3000 * Math.pow(geo(page, cur).scale * geo(page, cur).k, 2) && !cap.splash) cap.splash = cur;
     }
-    stable = regionDiff(prev, cur, page, FULL) < 3000 ? stable + 1 : 0;
+    stable = regionDiff(prev, cur, page, FULL) < STABLE_PX * Math.pow(geo(page, cur).k, 2) ? stable + 1 : 0;
     prev = cur;
     if (isMainMenu(cur, page) && stable >= 2) { cap.sec = (Date.now() - t0) / 1000; return loadingCapture ? cap : cap.sec; }
   }
@@ -216,9 +221,10 @@ async function playBranch(browser, tag, picks, expected, extra) {
 }
 
 async function compare(browser) {
-  await playBranch(browser, 'A_true', [0, 0, 0], 1, true);
-  await playBranch(browser, 'B_half', [1, 1, 1], 2, false);
-  await playBranch(browser, 'C_miss', [2, 2, 2], 3, false);
+  const only = opt('only', 'A,B,C').split(',');
+  if (only.includes('A')) await playBranch(browser, 'A_true', [0, 0, 0], 1, true);
+  if (only.includes('B')) await playBranch(browser, 'B_half', [1, 1, 1], 2, false);
+  if (only.includes('C')) await playBranch(browser, 'C_miss', [2, 2, 2], 3, false);
 }
 
 async function saveload(browser) {
