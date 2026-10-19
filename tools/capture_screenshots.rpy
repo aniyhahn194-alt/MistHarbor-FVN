@@ -39,6 +39,9 @@ init python:
         ("17_menu_preferences", "screen", "preferences"),
         ("18_menu_history", "screen", "history"),
         ("19_menu_about", "screen", "about"),
+        ("20_notify", "screen", "notify"),
+        ("21_confirm", "screen", "confirm"),
+        ("22_skip", "screen", "skip_indicator"),
     ]
 
     def _shot_hit(kind, pat):
@@ -145,6 +148,7 @@ testcase shots_miss:
 
 ## 菜单类界面：从真实剧情中途打开（后巷选项出现后），逐个截图再返回
 testcase shots_menus:
+    $ renpy.set_physical_size((1280, 720))
     $ _preferences.text_cps = 0
     $ shot_run = True
     run Start()
@@ -157,4 +161,22 @@ testcase shots_menus:
     pause 0.2 until run ShotWait("18_menu_history")
     run ShowMenu("about")
     pause 0.2 until run ShotWait("19_menu_about")
+    run Return()
+    pause 1.0
+    run MainMenu(confirm=True)
+    pause 0.2 until run ShotWait("21_confirm")
+    $ renpy.quit()
+
+## 提示与跳过指示：选择后出现信任度提示；已读文本可快进
+testcase shots_notify_skip:
+    $ renpy.set_physical_size((1280, 720))
+    $ _preferences.text_cps = 0
+    $ _preferences.skip_unseen = True
+    $ shot_run = True
+    run Start()
+    pause 0.2 until run ShotWait("04_choice_1_dock")
+    "那就麻烦你带路"
+    pause 0.2 until run ShotWait("20_notify")
+    run Skip(fast=True)
+    pause 0.2 until run ShotWait("22_skip")
     $ renpy.quit()
