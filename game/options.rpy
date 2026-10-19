@@ -73,7 +73,15 @@ define config.window_icon = "gui/window_icon.png"
 
 init python:
 
-    ## 以下文件不放进发行包
+    ## 以下文件不放进发行包（自动化测试用例仅用于开发）
+    build.classify('game/tests.rpy', None)
+    build.classify('game/tests.rpyc', None)
+
+    ## 开发用文件不进入玩家发行包；保留第三方许可说明
+    build.classify('README.md', None)
+    build.classify('docs/**', None)
+    build.classify('tools/**', None)
+    build.classify('THIRD_PARTY_NOTICES.md', 'all')
     build.classify('**~', None)
     build.classify('**.bak', None)
     build.classify('**/.**', None)

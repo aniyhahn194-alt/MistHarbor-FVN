@@ -79,6 +79,13 @@ Ren'Py 内置自动化测试（需要图形环境，每条路径对应一个结�
 ./renpy.sh /path/to/MistHarbor-FVN test restart     # 返回主菜单后重新开始
 ```
 
+## Windows 发行包与试玩
+
+- **发行包**：用 Ren'Py 官方 `distribute` 命令构建 `MistHarbor-0.1.0-win.zip`（约 30 MB，内含 `MistHarbor.exe`、Windows 版 Python 运行时、全部脚本/图片/字体）。
+  压缩包不提交到 Git 仓库（二进制较大且可随时重建），获取与重建方法见 [docs/WINDOWS_PLAYTEST.md](docs/WINDOWS_PLAYTEST.md)。
+- **自行构建**：Windows 上用 Launcher 的 “Build Distributions” 勾选 Windows 即可；Linux/macOS 可运行 `tools/build_windows.sh <SDK目录> [输出目录]`。
+- **试玩清单**：[docs/WINDOWS_PLAYTEST.md](docs/WINDOWS_PLAYTEST.md) 面向零基础开发者，覆盖启动、对话、三条分支、存读档、重新开始、退出。
+
 ## 目录结构
 
 ```
@@ -96,6 +103,8 @@ tools/
   generate_assets.py  用 Pillow 绘制占位素材（非运行依赖）
   check_project.py    静态检查脚本
   capture_screenshots.rpy  驱动真实剧情截图的辅助脚本（需临时复制到 game/，不提交到 game/）
+  build_windows.sh    调用官方 distribute 构建 Windows zip（Linux/macOS）
+docs/WINDOWS_PLAYTEST.md  Windows 运行/构建指南与试玩清单
 docs/screenshots/     真实运行游戏时截取的截图
 THIRD_PARTY_NOTICES.md  第三方内容（Ren'Py 模板、字体、翻译）的来源与许可
 ```
@@ -123,14 +132,18 @@ THIRD_PARTY_NOTICES.md  第三方内容（Ren'Py 模板、字体、翻译）的�
 | `test path_miss` | **通过**：到达 `ending_miss`（`assert trust == -6`），回到主菜单后退出，退出码 0 |
 | `test save_load` | **通过**：后巷处存档（trust=2）→ 继续选择使 trust=0 → 读档后 trust 回到 2，并能再次走完第二次选择（trust=4）。存/读档由 `FileSave`/`FileLoad` 动作触发 |
 | `test restart` | **通过**：中途用 `MainMenu` 返回主菜单后再次“开始游戏”，`trust`、`refused_guide` 被重置 |
+| Windows 发行包构建 | **已完成**：`renpy.sh launcher distribute <项目> --package win` 成功，生成 `MistHarbor-0.1.0-win.zip`（约 30 MB，1612 个文件，zip 完整性检查通过）。在 Linux 上交叉构建，使用 SDK 自带的 Windows 运行时 |
+| 发行包内容检查 | **已完成**：包内含 `MistHarbor.exe`、`game/script.rpy(c)`、`options/gui/screens`、`game/images/` 全部 7 张图、`game/gui/`（含自制主菜单/游戏菜单背景与图标）、`game/fonts/`（思源黑体 + OFL.txt）、`game/tl/schinese/`、`THIRD_PARTY_NOTICES.md`、`lib/py3-windows-x86_64/`；**不含** `tests.rpy`、`docs/`、`tools/`、`README.md` |
+| 对解压后的发行包做测试 | **通过**：把 zip 解压后，用 Ren'Py 8.3.7 **Linux 运行时**对包内 `game/` 运行 lint（无错误）和 path_true / path_half / path_miss / save_load / restart 五个测试（测试时临时把 `tests.rpy` 放入解压目录），全部通过。这证明包内脚本与资源完整，**但不等于 Windows 上能运行** |
+| `MistHarbor.exe` 在真实 Windows 上启动 / 试玩 | **未验证**：构建环境为 Linux，没有 Windows 机器，也没有 Wine。需要人在 Windows 上按 [docs/WINDOWS_PLAYTEST.md](docs/WINDOWS_PLAYTEST.md) 验证 |
 | 真实剧情截图 | **已完成**：由 testcase 驱动真实流程截取 15 张（见下），不含临时 label 截图 |
 | 中文字体 | 已检查：剧本、选项、界面字符均在字体字库内；验收时发现结局卡片标题中的间隔号“·”显示为方块，已改为“：” |
 | 选项遮挡立绘 | 已修复：选项原本盖住角色面部，现将选项下移到面部与对话框之间（`screens.rpy` 中 `choice_vbox`），截图确认不再遮脸，仍会盖住躯干部分 |
 | 通过界面按钮手动点击“存档/读档/设置”页 | **未验证**（只测试了存档动作本身，没有用 testcase 点击存档页面的格子；设置页仅在上一阶段截图中见过） |
 | 多次存档覆盖、自动存档、快速存档(F5/F9)、回滚 | **未验证** |
 | 真人试玩与阅读时长 | **未进行**：3–5 分钟仅为按文字量的估算 |
-| Ren'Py Launcher 图形界面导入 | **未验证**：只通过命令行 `renpy.sh` 运行；项目为标准结构，理论上可导入 |
-| Windows / macOS / Android、打包发行 | **未验证** |
+| Ren'Py Launcher 图形界面导入、Launcher 里点 Build | **未验证**：只通过命令行 `renpy.sh` 运行/构建；项目为标准结构，理论上可导入 |
+| macOS / Android / Web 构建 | **未验证**（未尝试） |
 | 声音 | **未验证**（V0.1 无音频，测试环境也无声卡） |
 
 ### 截图
