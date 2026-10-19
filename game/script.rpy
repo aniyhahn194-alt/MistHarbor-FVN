@@ -353,7 +353,7 @@ label ending_true:
 
     "午夜钟声响起。雾港的雾，第一次被一盏灯照亮了。"
 
-    call show_ending("结局一 · 灯塔回信", "true")
+    call show_ending("结局一：灯塔回信", "true")
     return
 
 
@@ -379,7 +379,7 @@ label ending_half:
 
     "她的身影消失在雾里。塔顶，一点微弱的光亮了起来。"
 
-    call show_ending("结局二 · 半盏灯火", "half")
+    call show_ending("结局二：半盏灯火", "half")
     return
 
 
@@ -404,7 +404,7 @@ label ending_miss:
 
     "一周后的雾夜，我在窗边看见远处的岬角上，灯亮了一瞬——像有人在回答一封没有人读过的信。"
 
-    call show_ending("结局三 · 雾中错过", "miss")
+    call show_ending("结局三：雾中错过", "miss")
     return
 
 

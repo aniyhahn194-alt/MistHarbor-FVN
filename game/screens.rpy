@@ -214,10 +214,11 @@ style choice_button_text is button_text
 
 style choice_vbox:
     xalign 0.5
-    ypos 270
+    ## 选项放在立绘面部下方、对话框上方，避免遮挡角色的脸和表情
+    ypos 425
     yanchor 0.5
 
-    spacing gui.choice_spacing
+    spacing 14
 
 style choice_button is default:
     properties gui.button_properties("choice_button")
