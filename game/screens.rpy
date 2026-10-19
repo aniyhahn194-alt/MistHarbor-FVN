@@ -424,7 +424,7 @@ transform title_in:
 
 transform lamp_pulse:
     anchor (0.5, 0.5)
-    pos (901, 167)
+    pos (800, 169)
     zoom 1.7
     alpha 0.28
     block:
@@ -434,7 +434,7 @@ transform lamp_pulse:
 
 transform beam_sweep:
     anchor (0.5, 0.5)
-    pos (901, 167)
+    pos (800, 169)
     transform_anchor True
     rotate -3.0
     alpha 0.0

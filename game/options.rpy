@@ -11,12 +11,12 @@ define config.name = _("雾港来信")
 define gui.show_name = True
 
 ## 版本号
-define config.version = "0.2.0-p1"
+define config.version = "0.5.0"
 
 ## “关于”界面的文字，段落之间用 \n\n 分隔
-define gui.about = _("""《雾港来信》（Letters from Mist Harbor）V0.2 开发版（P1：视觉与界面升级）。\n
-原创拟人化（Furry）视觉小说。剧情、角色立绘与背景占位图均为原创，
-由脚本绘制（见 tools/generate_assets.py）；界面素材由 tools/generate_ui.py 绘制。\n
+define gui.about = _("""《雾港来信》（Letters from Mist Harbor）V0.5 开发版（美术统一与开场体验优化）。\n
+原创拟人化（Furry）视觉小说。剧情原创；角色立绘与背景是由脚本绘制的程序化占位美术（并非专业手绘），
+见 tools/generate_assets.py 与 tools/generate_v05_art.py；界面素材由 tools/generate_ui.py 绘制。\n
 引擎：Ren'Py。界面代码基于 Ren'Py 官方模板修改；字体：思源黑体（SIL OFL 1.1）。""")
 
 ## 打包时使用的短名称：只能是 ASCII，不含空格、冒号、分号

@@ -51,6 +51,15 @@ export SDL_AUDIODRIVER="${SDL_AUDIODRIVER:-dummy}"
 test -f "$OUTDIR/index.html" -a -f "$OUTDIR/renpy.wasm" -a -f "$OUTDIR/game.zip" \
   || { echo "错误：构建产物不完整" >&2; exit 1; }
 
+# V0.5：官方 CLI 的 web_build（launcher/game/web.rpy 的 web_build_command）把 presplash 的查找路径写成
+# project.current.path，而命令行模式下 project.current 并不是被构建的项目，所以项目根目录的 web-presplash.png
+# 不会被复制、index.html 仍引用 Ren'Py 默认的 web-presplash.jpg。Launcher 图形界面里的 “Build Web Application”
+# 没有这个问题。这里按 Launcher 同样的做法补上这一步，然后重新打 zip，并用 verify_web_build.py 校验。
+if [ -f "$PROJECT/web-presplash.png" ] || [ -f "$PROJECT/web-presplash.jpg" ] || [ -f "$PROJECT/web-presplash.webp" ]; then
+  python3 "$PROJECT/tools/verify_web_build.py" apply-presplash "$PROJECT" "$OUTDIR"
+fi
+python3 "$PROJECT/tools/verify_web_build.py" check "$PROJECT" "$OUTDIR"
+
 (cd "$DEST" && sha256sum "MistHarbor-FVN-web.zip" | tee SHA256SUMS.txt)
 du -sh "$OUTDIR" "$DEST/MistHarbor-FVN-web.zip"
 echo "本地预览：node tools/web_test/serve.js \"$OUTDIR\" 8000   然后访问 http://127.0.0.1:8000/"

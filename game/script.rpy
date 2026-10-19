@@ -1,4 +1,4 @@
-## script.rpy —— 《雾港来信》主剧本（V0.2-P1：剧情文本与分支不变，仅升级视觉与转场）
+## script.rpy —— 《雾港来信》主剧本（V0.5：剧情文本与分支不变，仅升级美术、标题画面与轻量动态）
 ##
 ## 剧情结构（共 3 个分支选择 + 3 个结局）：
 ##   start
@@ -28,8 +28,8 @@ image bg dock = "images/bg_dock.png"
 image bg alley = "images/bg_alley.png"
 image bg lighthouse = "images/bg_lighthouse.png"
 
-## 立绘：原图 640x1040，缩放到适合 720p 画面的大小。
-## V0.2 缩小到 0.56：脸部集中在两侧，选项菜单与对话框右上角的快捷按钮都不再遮脸。
+## 立绘：V0.5 起原图为 720x1140（640x1040 的立绘四周加了留白，用来放边缘光晕与脚下投影），
+## 缩放到适合 720p 画面的大小。V0.2 起缩小到 0.56：脸部集中在两侧，选项菜单与对话框右上角的快捷按钮都不再遮脸。
 ## 图像名第一个词是 tag，同一个 tag 的新图像会替换旧图像（即切换表情）。
 image huizhou normal = Transform("images/huizhou_normal.png", zoom=0.56)
 image huizhou worried = Transform("images/huizhou_worried.png", zoom=0.56)
@@ -41,25 +41,45 @@ image linlan smile = Transform("images/linlan_smile.png", zoom=0.56)
 ## 变换与转场
 ################################################################################
 
-## 站位
+## 站位。V0.5：站定后加一个极轻的“呼吸”（只做 y 方向 4px 的缓动，Web / 手机上几乎没有开销）。
+## 两人的呼吸周期、起始相位不同，避免像复制粘贴一样同步起伏。
 transform pos_left:
     xalign 0.04
     yalign 1.0
+    block:
+        ease 3.4 yoffset -4
+        ease 3.4 yoffset 0
+        repeat
 
 transform pos_right:
     xalign 0.96
     yalign 1.0
+    yoffset 0
+    pause 1.3
+    block:
+        ease 3.9 yoffset -4
+        ease 3.9 yoffset 0
+        repeat
 
-## 滑入动画：角色从屏幕外缓动进场
+## 滑入动画：角色从屏幕外缓动进场，落位后接着呼吸
 transform enter_left:
     xalign -0.3
     yalign 1.0
     ease 0.6 xalign 0.04
+    block:
+        ease 3.4 yoffset -4
+        ease 3.4 yoffset 0
+        repeat
 
 transform enter_right:
     xalign 1.3
     yalign 1.0
     ease 0.6 xalign 0.96
+    pause 1.3
+    block:
+        ease 3.9 yoffset -4
+        ease 3.9 yoffset 0
+        repeat
 
 ## 灯塔点亮时的暖色闪光
 define flash_lamp = Fade(0.2, 0.0, 1.0, color="#fff1c0")
@@ -79,6 +99,28 @@ image fog_drift:
     ypos 360
     linear 80 xpos -1280
     repeat
+
+
+## V0.5：场景里的灯光“呼吸”。位置对应背景图里的灯（1280x720 坐标），用 gui/fx/fx_glow.png 的暖金光晕叠加，
+## 只有 alpha / zoom 的缓动，是最便宜的一类动画。放在立绘之前 show，所以立绘始终在光晕上层。
+transform lamp_breath(x, y, z, lo, hi, period, phase=0.0):
+    anchor (0.5, 0.5)
+    pos (x, y)
+    zoom z
+    alpha lo
+    pause phase
+    block:
+        ease period alpha hi
+        ease period alpha lo
+        repeat
+
+image lamp_dock_a = At("gui/fx/fx_glow.png", lamp_breath(444, 293, 0.95, 0.12, 0.30, 2.6))
+image lamp_dock_b = At("gui/fx/fx_glow.png", lamp_breath(864, 315, 0.85, 0.10, 0.28, 3.1, 0.9))
+image lamp_dock_c = At("gui/fx/fx_glow.png", lamp_breath(753, 270, 0.50, 0.18, 0.42, 2.2, 0.4))
+image lamp_alley_a = At("gui/fx/fx_glow.png", lamp_breath(787, 180, 1.05, 0.14, 0.32, 2.8))
+image lamp_alley_b = At("gui/fx/fx_glow.png", lamp_breath(640, 560, 0.70, 0.06, 0.16, 3.4, 0.6))
+image lamp_light_a = At("gui/fx/fx_glow.png", lamp_breath(800, 169, 1.10, 0.14, 0.34, 2.8))
+image lamp_light_b = At("gui/fx/fx_glow.png", lamp_breath(333, 460, 0.60, 0.12, 0.28, 3.2, 0.7))
 
 
 ################################################################################
@@ -149,6 +191,9 @@ label start:
 
     scene bg dock
     show fog_drift
+    show lamp_dock_a
+    show lamp_dock_b
+    show lamp_dock_c
     with slow_fade
 
     "傍晚六点，雾从海面漫上栈桥，把一盏盏路灯吞成模糊的光斑。"
@@ -229,6 +274,8 @@ label ch2_alley:
 
     scene bg alley
     show fog_drift
+    show lamp_alley_a
+    show lamp_alley_b
     with slow_fade
 
     show huizhou normal at pos_left
@@ -294,6 +341,8 @@ label ch3_lighthouse:
 
     scene bg lighthouse
     show fog_drift
+    show lamp_light_a
+    show lamp_light_b
     with slow_fade
 
     show huizhou normal at pos_left
@@ -367,6 +416,8 @@ label ending_true:
 
     scene bg lighthouse
     show fog_drift
+    show lamp_light_a
+    show lamp_light_b
     with flash_lamp
 
     show huizhou normal at pos_left
@@ -449,6 +500,8 @@ label show_ending(title, key):
 
     scene bg lighthouse
     show fog_drift
+    show lamp_light_a
+    show lamp_light_b
     with fog_fade
 
     call screen ending_card(title, key)

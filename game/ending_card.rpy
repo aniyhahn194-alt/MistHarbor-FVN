@@ -80,7 +80,7 @@ transform ending_card_in:
 
 transform ending_lamp_glow(power):
     anchor (0.5, 0.5)
-    pos (901, 167)
+    pos (800, 169)
     zoom 2.2
     alpha 0.0
     linear 1.0 alpha (0.45 * power)
@@ -91,7 +91,7 @@ transform ending_lamp_glow(power):
 
 transform ending_beam(power):
     anchor (0.5, 0.5)
-    pos (901, 167)
+    pos (800, 169)
     transform_anchor True
     rotate -3.0
     alpha 0.0

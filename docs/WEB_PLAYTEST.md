@@ -185,3 +185,11 @@ GitHub Pages 是否对 `.wasm` / `renpy.data` 做 gzip **未验证**，所以实
 - [ ] 保存 → 关闭标签页 → 重新打开 → 读档，进度是否还在
 - [ ] 切到后台再回来是否仍正常（iOS 可能杀掉标签页）
 - [ ] 竖屏时是否能接受（预期画面很小）
+
+---
+
+## 附：V0.5 的 Web 构建补充（加载画面与预览方案）
+
+- **自制加载画面**：项目根目录的 `web-presplash.png` 是 Web 构建的页面加载画面。Ren'Py 8.3.7 官方 **命令行** `web_build` 不会应用它（`launcher/game/web.rpy` 里查找路径用的是 `project.current.path`，命令行模式下它不是被构建的项目；Launcher 图形界面不受影响），所以 `tools/build_web.sh` 在官方构建后调用 `tools/verify_web_build.py apply-presplash` 补上：复制图片、删除默认 `web-presplash.jpg`、改写 `index.html` / `pwa_catalog.json`、给加载状态条注入一小段 CSS、重新生成 zip；随后 `verify_web_build.py check` 校验（引用与文件一致、包内无 `tests.rpy`、无残留 `.rpyc`），任何一项失败都会让构建失败。`web-build-pages.yml` 调用的也是这个脚本，所以 CI 构建同样生效。
+- **如何确认生效**：解压产物，`index.html` 里应为 `<img id="presplash" src="web-presplash.png">`，且目录里没有 `web-presplash.jpg`；打开页面首屏应是《雾港来信》标题画面。
+- **预览方案（本轮不部署）**：见 [V0.5-STATUS.md](V0.5-STATUS.md) 第 5 节。
