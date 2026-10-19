@@ -32,7 +32,7 @@ const ctxOpts = MOBILE
 // 各版本界面里的点击坐标（游戏逻辑坐标 1280x720）
 const UIS = {
   v01: { start: [96, 277], load: [96, 319], choiceX: 640, choiceY: [366, 422, 480], quickSave: [662, 710], slot1: [503, 280], advance: [640, 120] },
-  v02: { start: [140, 282], load: [140, 350], choiceX: 640, choiceY: [125, 237, 345], quickSave: [864, 528], slot1: [549, 294], advance: [640, 20] },
+  v02: { start: [140, 282], load: [140, 350], choiceX: 640, choiceY: [125, 237, 345], quickSave: [864, 528], quickSaveTouch: [1083, 530], slot1: [549, 294], advance: [640, 20] },
 };
 const U = UIS[UI];
 
@@ -212,7 +212,7 @@ async function saveload(browser) {
   await tap(page, ...U.start); await sleep(4500);
   await advanceUntilStuck(page); await pickChoice(page, 0);
   await advanceUntilStuck(page);
-  await tap(page, ...U.quickSave); await sleep(2200);
+  await tap(page, ...(MOBILE && U.quickSaveTouch ? U.quickSaveTouch : U.quickSave)); await sleep(2200);
   savePng(await grab(page), 'save-1-screen');
   await tap(page, ...U.slot1); await sleep(2200);
   savePng(await grab(page), 'save-2-slot1-saved');
