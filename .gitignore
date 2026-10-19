@@ -1,0 +1,22 @@
+# Ren'Py 运行/构建产物
+*.rpyc
+*.rpymc
+*.rpyb
+cache/
+saves/
+log.txt
+errors.txt
+traceback.txt
+tmp/
+dists/
+*-dists/
+.renpy/
+
+# Python / 编辑器
+__pycache__/
+*.pyc
+.venv/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
