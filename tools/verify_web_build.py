@@ -7,7 +7,7 @@
       （官方 CLI web_build 在这一步有 bug，见 tools/build_web.sh 里的说明；Launcher 图形界面没有。）
   check <项目目录> <产物目录>
       校验：index.html 引用的 presplash 存在且与项目文件逐字节一致；默认 presplash 已被替换；
-      game.zip 内不含 tests.rpy / 截图辅助脚本，且每个 game/**/*.rpyc 都有对应的 .rpy（没有残留）。
+      game.zip 内不含 tests.rpy / 截图辅助脚本，且每个 game/ 下的 .rpyc 都有对应的 .rpy（引擎自带的 renpy/common 不检查）（没有残留）。
       任何一项不满足都以非 0 退出。
 """
 import json
@@ -86,7 +86,7 @@ def check(project, out):
             errs.append("game.zip 内含开发用文件 %s" % n)
     nameset = set(names)
     for n in names:
-        if n.endswith(".rpyc") and n[:-1] not in nameset:
+        if n.startswith("game/") and n.endswith(".rpyc") and n[:-1] not in nameset:
             errs.append("game.zip 内有残留 .rpyc（没有对应 .rpy）：%s" % n)
     zpath = out.rstrip("/") + ".zip"
     if os.path.exists(zpath):
@@ -97,8 +97,6 @@ def check(project, out):
                 errs.append("外层 zip 缺少 %s" % name)
             if name and name != "web-presplash.jpg" and "web-presplash.jpg" in zf.namelist():
                 errs.append("外层 zip 仍含默认 web-presplash.jpg")
-            if "game/presplash.png" in zf.namelist():
-                pass
     if errs:
         print("Web 产物校验失败：")
         for e in errs:
