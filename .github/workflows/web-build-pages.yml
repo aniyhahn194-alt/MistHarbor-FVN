@@ -1,0 +1,89 @@
+# Ren'Py 官方 Web 构建 + （可选）发布到 GitHub Pages。
+#
+# 安全设计：
+#   * 仅 workflow_dispatch（手动触发），没有 push / pull_request 触发，合并本文件不会自动运行或发布。
+#   * 默认只构建并把产物作为“工作流 Artifact”保存（仅仓库协作者可下载），不发布。
+#   * 只有手动运行时把 publish 选为 yes，且仓库已由所有者在 Settings → Pages 中把 Source 设为 “GitHub Actions”，
+#     才会部署到公开的 github.io 站点。本文件不会启用 Pages。
+# 详见 docs/WEB_PLAYTEST.md。
+name: web-build-pages
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "是否发布到 GitHub Pages（公开网址！需先在仓库 Settings → Pages 选择 GitHub Actions）"
+        type: choice
+        options: ["no", "yes"]
+        default: "no"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: web-build-pages
+  cancel-in-progress: false
+
+env:
+  RENPY_VERSION: "8.3.7"
+  # 官方 checksums：https://www.renpy.org/dl/8.3.7/checksums.txt （md5 段）
+  RENPY_SDK_MD5: "9521e867cdcedc3fe0320233c9cf2248"
+  RENPY_WEB_MD5: "d4ceaacf857e3a6b086ad7c97709635e"
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 下载并校验 Ren'Py ${{ env.RENPY_VERSION }} SDK 与官方 Web 组件
+        run: |
+          set -euo pipefail
+          base="https://www.renpy.org/dl/${RENPY_VERSION}"
+          curl -fSL "$base/renpy-${RENPY_VERSION}-sdk.tar.bz2" -o sdk.tar.bz2
+          curl -fSL "$base/renpy-${RENPY_VERSION}-web.zip" -o web.zip
+          echo "${RENPY_SDK_MD5}  sdk.tar.bz2" | md5sum -c -
+          echo "${RENPY_WEB_MD5}  web.zip" | md5sum -c -
+          tar xjf sdk.tar.bz2
+          unzip -q web.zip -d "renpy-${RENPY_VERSION}-sdk"
+
+      - name: 官方 Web 构建
+        run: tools/build_web.sh "renpy-${RENPY_VERSION}-sdk" dists/web
+
+      - name: 构建产物体积与校验和
+        run: |
+          du -sh dists/web/MistHarbor-FVN-web dists/web/MistHarbor-FVN-web.zip
+          cat dists/web/SHA256SUMS.txt
+
+      - name: 上传构建产物（Artifact，不公开）
+        uses: actions/upload-artifact@v4
+        with:
+          name: MistHarbor-FVN-web
+          path: |
+            dists/web/MistHarbor-FVN-web.zip
+            dists/web/SHA256SUMS.txt
+          retention-days: 14
+
+      - name: 准备 Pages 内容
+        if: ${{ inputs.publish == 'yes' }}
+        run: touch dists/web/MistHarbor-FVN-web/.nojekyll
+
+      - name: 上传 Pages 内容
+        if: ${{ inputs.publish == 'yes' }}
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dists/web/MistHarbor-FVN-web
+
+  deploy:
+    if: ${{ inputs.publish == 'yes' }}
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

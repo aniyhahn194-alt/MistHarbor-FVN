@@ -1,0 +1,9 @@
+{
+  "name": "mistharbor-web-test",
+  "private": true,
+  "description": "Playwright 驱动系统 Chrome/Chromium，对 Ren'Py Web 构建做真实浏览器冒烟/分支/存档测试（桌面 Chromium，含移动视口模拟）",
+  "dependencies": {
+    "playwright-core": "^1.49.0",
+    "pngjs": "^7.0.0"
+  }
+}

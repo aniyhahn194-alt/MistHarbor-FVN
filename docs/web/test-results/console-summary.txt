@@ -1,0 +1,26 @@
+PASS  分支 A_true（选项 1/1/1） — 到达结局卡片=1（期望 1，参考图完整=true）；回到主菜单=true；页面错误/失败请求=0；首次到主菜单 8.4s
+PASS  分支 B_half（选项 2/2/2） — 到达结局卡片=2（期望 2，参考图完整=true）；回到主菜单=true；页面错误/失败请求=0；首次到主菜单 8.0s
+PASS  分支 C_miss（选项 3/3/3） — 到达结局卡片=3（期望 3，参考图完整=true）；回到主菜单=true；页面错误/失败请求=0；首次到主菜单 8.2s
+PASS  存档 → 刷新页面 → 读档（存档跨页面重载保留，且变量恢复） — 读档后按 +0/+0 通关到达结局卡片=2（结局二=信任度 1-3，说明存档里的信任度 2 被恢复；若变量丢失会是结局三）
+PASS  全新浏览器上下文看不到已有存档（存档按浏览器/站点隔离） — 槽位1取样像素 rgb=81,40,0（人工看 save_06 截图确认为“空存档位”）
+PASS  手机视口模拟（landscape 844x390，触控，iPhone UA；桌面 Chromium） — 主菜单 7.4s；触控点按开始游戏/推进/选项=true；页面错误=0
+PASS  手机视口模拟（portrait 390x844，触控，iPhone UA；桌面 Chromium） — 主菜单 7.9s；触控点按开始游戏/推进/选项=true；页面错误=0
+按需下载的游戏图片请求（game/images/...）:
+  game/images/bg_dock.png  259519 B
+  game/images/linlan_normal.png  68674 B
+  game/images/huizhou_normal.png  65548 B
+  game/images/huizhou_worried.png  67099 B
+  game/images/linlan_smile.png  65744 B
+  game/images/bg_alley.png  219235 B
+  game/images/bg_lighthouse.png  192441 B
+体积 > 100 KB 的请求:
+  renpy.wasm  18.60 MiB
+  renpy.data  15.61 MiB
+  game.zip  7.09 MiB
+  web-presplash.jpg  1.09 MiB
+  renpy.js  0.38 MiB
+  game/images/bg_dock.png  0.25 MiB
+  game/images/bg_alley.png  0.21 MiB
+  game/images/bg_lighthouse.png  0.18 MiB
+内存（主菜单） {"jsHeapUsedMiB":4.9,"wasmMemoryMiB":192} （到灯塔选项） {"jsHeapUsedMiB":5.6,"wasmMemoryMiB":192}
+PASS  网络请求清单与内存占用 — 按需图片请求 7 个；总请求 15 个；内存(主菜单) {"jsHeapUsedMiB":4.9,"wasmMemoryMiB":192}；内存(灯塔选项) {"jsHeapUsedMiB":5.6,"wasmMemoryMiB":192}

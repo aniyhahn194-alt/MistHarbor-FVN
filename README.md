@@ -86,6 +86,28 @@ Ren'Py 内置自动化测试（需要图形环境，每条路径对应一个结�
 - **自行构建**：Windows 上用 Launcher 的 “Build Distributions” 勾选 Windows 即可；Linux/macOS 可运行 `tools/build_windows.sh <SDK目录> [输出目录]`。
 - **试玩清单**：[docs/WINDOWS_PLAYTEST.md](docs/WINDOWS_PLAYTEST.md) 面向零基础开发者，覆盖启动、对话、三条分支、存读档、重新开始、退出。
 
+## Web 版（手机浏览器试玩）
+
+用 Ren'Py 官方 Web 构建（`launcher web_build`，即 Launcher 里的 “Build Web Application”）把**同一份游戏**编译为 HTML5 / WebAssembly，没有另写网页版。
+完整说明、数据与未验证项见 [docs/WEB_PLAYTEST.md](docs/WEB_PLAYTEST.md)。
+
+- **构建**：`RENPY_WEB_AUTO_INSTALL=1 tools/build_web.sh <Ren'Py 8.3.7 SDK 目录> [输出目录]`（需要官方 `renpy-8.3.7-web` 组件，脚本可代为下载）。产物约 45 MB，**不提交进 git**。
+- **本地预览**：`node tools/web_test/serve.js <产物目录> 8000`，浏览器打开 `http://127.0.0.1:8000/`。
+- **手机访问**：目前**没有**公开的在线试玩链接。需要所有者批准后，才能用 GitHub Pages 等方式托管（部署配置 `.github/workflows/web-build-pages.yml` 仅手动触发，默认不发布；步骤见 docs/WEB_PLAYTEST.md）。
+
+实际完成与测试（Linux 云端，Ren'Py 8.3.7，桌面 Google Chrome 154 via Playwright；**不是**真实手机，**未**做 iOS Safari / Android Chrome 真机测试）：
+
+| 项目 | 结果 |
+| --- | --- |
+| 官方 Web 构建 | **成功**：4 秒内生成 `MistHarbor-FVN-web/` 与 zip（目录与 zip 各约 45 MiB），含 `renpy.wasm`、`renpy.data`、`game.zip`、按需下载的 7 张图片 |
+| 浏览器加载（背景 / 立绘 / 中文字体） | **通过**：3 张背景、4 张立绘均显示；中文由游戏自带思源黑体渲染，无方块；7 张图均走“按需下载”请求 |
+| 三条剧情分支 | **通过**：用键盘推进、鼠标点选项，三条路径分别到达结局一 / 二 / 三卡片并返回主菜单（与结局卡片参考图像素比对），页面无报错、无失败请求 |
+| 存档 / 读档 | **通过（桌面 Chromium）**：存档页点击槽位存档 → 刷新页面 → 读档，信任度恢复（按 +0/+0 通关到结局二）；全新浏览器上下文看不到该存档（存档在 IndexedDB，按站点/浏览器隔离） |
+| 手机视口 + 触控模拟 | **通过（仅为桌面 Chromium 模拟）**：844×390 横屏、390×844 竖屏，iPhone UA，触控点按可开始 / 推进 / 选择。竖屏时画面只占屏幕宽度一小条，实际需横屏游玩 |
+| 首次加载 | 首次加载传输：无压缩 43 MiB；服务器开启 gzip 约 19 MiB。限速模拟（Chromium DevTools）：无压缩 Fast 4G 约 46 s、Slow 4G 约 222 s；gzip 约 24 s / 104 s |
+| 内存 | Chromium 下 WebAssembly 内存 192 MiB、JS 堆约 5 MiB（iOS Safari 内存表现**未验证**） |
+| iOS Safari / Android 真机、Pages 实际部署、音频（V0.1 无音频）、离线 / PWA 安装、存档导入导出 | **未验证** |
+
 ## 目录结构
 
 ```
@@ -104,8 +126,14 @@ tools/
   check_project.py    静态检查脚本
   capture_screenshots.rpy  驱动真实剧情截图的辅助脚本（需临时复制到 game/，不提交到 game/）
   build_windows.sh    调用官方 distribute 构建 Windows zip（Linux/macOS）
+  build_web.sh        调用官方 web_build 构建 HTML5/WebAssembly 版
+  web_test/           Playwright 浏览器测试脚本与本地静态服务器（桌面 Chromium）
 docs/WINDOWS_PLAYTEST.md  Windows 运行/构建指南与试玩清单
 docs/screenshots/     真实运行游戏时截取的截图
+docs/WEB_PLAYTEST.md  Web 版构建、浏览器测试结果、手机访问与部署说明
+docs/web/             Web 浏览器测试截图与结果 JSON
+.github/workflows/web-build-pages.yml  Web 构建 / 可选发布到 Pages（仅手动触发）
+progressive_download.txt  Web 版图片按需下载规则（Ren'Py 首次 Web 构建自动生成）
 THIRD_PARTY_NOTICES.md  第三方内容（Ren'Py 模板、字体、翻译）的来源与许可
 ```
 
@@ -143,7 +171,8 @@ THIRD_PARTY_NOTICES.md  第三方内容（Ren'Py 模板、字体、翻译）的�
 | 多次存档覆盖、自动存档、快速存档(F5/F9)、回滚 | **未验证** |
 | 真人试玩与阅读时长 | **未进行**：3–5 分钟仅为按文字量的估算 |
 | Ren'Py Launcher 图形界面导入、Launcher 里点 Build | **未验证**：只通过命令行 `renpy.sh` 运行/构建；项目为标准结构，理论上可导入 |
-| macOS / Android / Web 构建 | **未验证**（未尝试） |
+| macOS / Android 构建 | **未验证**（未尝试） |
+| Web 构建与浏览器测试 | 见上方“Web 版”章节与 [docs/WEB_PLAYTEST.md](docs/WEB_PLAYTEST.md) |
 | 声音 | **未验证**（V0.1 无音频，测试环境也无声卡） |
 
 ### 截图

@@ -1,0 +1,11 @@
+{
+  "chrome": "/usr/local/bin/google-chrome",
+  "url": "http://127.0.0.1:8000/index.html",
+  "results": [
+    {
+      "name": "网络请求清单与内存占用",
+      "ok": true,
+      "detail": "按需图片请求 7 个；总请求 15 个；内存(主菜单) {\"jsHeapUsedMiB\":4.9,\"wasmMemoryMiB\":192}；内存(灯塔选项) {\"jsHeapUsedMiB\":5.6,\"wasmMemoryMiB\":192}"
+    }
+  ]
+}

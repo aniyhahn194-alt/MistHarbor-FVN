@@ -1,0 +1,21 @@
+{
+  "chrome": "/usr/local/bin/google-chrome",
+  "url": "http://127.0.0.1:8000/index.html",
+  "results": [
+    {
+      "name": "分支 A_true（选项 1/1/1）",
+      "ok": true,
+      "detail": "到达结局卡片=1（期望 1，参考图完整=true）；回到主菜单=true；页面错误/失败请求=0；首次到主菜单 8.4s"
+    },
+    {
+      "name": "分支 B_half（选项 2/2/2）",
+      "ok": true,
+      "detail": "到达结局卡片=2（期望 2，参考图完整=true）；回到主菜单=true；页面错误/失败请求=0；首次到主菜单 8.0s"
+    },
+    {
+      "name": "分支 C_miss（选项 3/3/3）",
+      "ok": true,
+      "detail": "到达结局卡片=3（期望 3，参考图完整=true）；回到主菜单=true；页面错误/失败请求=0；首次到主菜单 8.2s"
+    }
+  ]
+}
