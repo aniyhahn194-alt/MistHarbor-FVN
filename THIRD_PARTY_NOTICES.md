@@ -1,6 +1,6 @@
 # 第三方内容与许可来源
 
-本项目 **V0.2-P1** 中**非自制**的内容如下。其余（剧本、背景、立绘、全部界面图片、特效层）均为本项目原创：背景 / 立绘由 `tools/generate_assets.py`、界面图片由 `tools/generate_ui.py` 用 Pillow 以代码绘制，没有使用任何外部图片素材。
+本项目 **V0.5** 中**非自制**的内容如下。其余（剧本、背景、立绘、加载 / 标题画面、全部界面图片、特效层）均为本项目原创：立绘原图由 `tools/generate_assets.py`、背景 / 立绘后期 / 加载画面由 `tools/generate_v05_art.py`、界面图片由 `tools/generate_ui.py` 用 Pillow 以代码绘制，没有使用任何外部图片素材，**也没有使用任何 AI 图像生成工具**（本环境未提供）。
 
 | 内容 | 位置 | 来源 | 许可 |
 | --- | --- | --- | --- |
@@ -15,6 +15,13 @@
 - **未使用**任何网络抓取的图片、字体、音频或第三方插画。
 - **已移除错误署名**：V0.1 的“关于”页残留了官方示例 `the_question` 的演职员署名（与本项目无关），V0.2 已改为本项目的真实来源说明。
 - 开发期工具依赖：Pillow（仅 `tools/`，HPND 许可，不随游戏分发）；Playwright（`tools/web_test/`，Apache-2.0，不随游戏分发）。
+
+## V0.5 的素材核对记录
+
+- **来源**：新增 / 改动的 `game/images/bg_*.png`、`game/images/huizhou_*.png`、`game/images/linlan_*.png`、`web-presplash.png`、`game/presplash.png`、`game/gui/splash.png`、`game/gui/main_menu.png`、`game/gui/game_menu.png`、`game/gui/textbox.png`、`game/gui/namebox.png`、`game/gui/button/{choice,quick}_*_background.png` 全部由本仓库 `tools/` 下的 Python + Pillow 脚本以代码生成。**授权状况**：作者原创的程序化图形，随项目一起发布，无第三方权利人。它们是程序化占位美术，**不是**专业手绘作品。
+- **字体**：没有新增字体。加载 / 标题画面（`web-presplash.png`、`game/presplash.png`、`game/gui/splash.png`）里的标题文字用已有的思源黑体 Lite（SIL OFL 1.1）**渲染成了图片**。OFL 1.1 允许在作品（含图像）中使用字体渲染的文字并随作品分发，`OFL.txt` 仍随包提供；没有修改或再分发字体文件本身。
+- **未使用**任何网络抓取的图片、字体、音频或第三方插画；没有使用图像生成模型。
+- **Web 构建产物**：包含 Ren'Py 官方 Web 运行时（`renpy.wasm` 等，来自官方 `renpy-8.3.7-web.zip`）；`tools/verify_web_build.py` 向 `index.html` 注入的只是一小段自写 CSS（加载状态条外观）。
 
 ## 说明
 
