@@ -33,9 +33,9 @@ An original Furry visual novel built with Ren'Py and AI-assisted development.
 5. `default trust = 0` 初始化信任度；每个选项通过 `change_trust()` 增减，并弹出提示（不暴露具体数值）
 6. 用 `if / elif / else` 与 `jump` 按信任度分流；另有 `refused_guide`、`seal_shown` 两个剧情标记影响对白
 7. 三个结局（均有结局卡片并正常 `return` 回主菜单）：
-   - 信任度 ≥ 4：**结局一 · 灯塔回信**
-   - 信任度 1–3：**结局二 · 半盏灯火**
-   - 信任度 ≤ 0：**结局三 · 雾中错过**
+   - 信任度 ≥ 4：**结局一：灯塔回信**
+   - 信任度 1–3：**结局二：半盏灯火**
+   - 信任度 ≤ 0：**结局三：雾中错过**
 8. 转场与动画：`fade` / `dissolve` / 自定义 `Fade`；角色滑入用 ATL `transform`；灯塔点亮闪光
 9. 信封预览用自定义 `screen letter_card`，可扩展为物品栏
 10. 使用 Ren'Py 自带的存档/读档、回退、历史、快进、自动前进、设置、帮助等功能
@@ -75,6 +75,8 @@ Ren'Py 内置自动化测试（需要图形环境，每条路径对应一个结�
 ./renpy.sh /path/to/MistHarbor-FVN test path_true
 ./renpy.sh /path/to/MistHarbor-FVN test path_half
 ./renpy.sh /path/to/MistHarbor-FVN test path_miss
+./renpy.sh /path/to/MistHarbor-FVN test save_load   # 存档 / 读档
+./renpy.sh /path/to/MistHarbor-FVN test restart     # 返回主菜单后重新开始
 ```
 
 ## 目录结构
@@ -85,15 +87,17 @@ game/
   options.rpy       基础配置（名称、版本、默认语言、转场、存档目录）
   gui.rpy           GUI 配置（字体、颜色、尺寸 1280x720）
   screens.rpy       界面（对话、菜单、存档、设置等，来自官方模板）
-  tests.rpy         Ren'Py 自动化测试用例
+  tests.rpy         Ren'Py 自动化测试用例（三条通关路径、存读档、重新开始）
   images/           游戏使用的背景与立绘（PNG）
   gui/              界面素材（主菜单/游戏菜单背景、图标为自制，按钮等为官方模板）
-  fonts/            思源黑体 Lite
+  fonts/            思源黑体 Lite 及其 OFL 许可文本
   tl/schinese/      Ren'Py 官方简体中文界面翻译
 tools/
   generate_assets.py  用 Pillow 绘制占位素材（非运行依赖）
   check_project.py    静态检查脚本
+  capture_screenshots.rpy  驱动真实剧情截图的辅助脚本（需临时复制到 game/，不提交到 game/）
 docs/screenshots/     真实运行游戏时截取的截图
+THIRD_PARTY_NOTICES.md  第三方内容（Ren'Py 模板、字体、翻译）的来源与许可
 ```
 
 ## 素材说明
@@ -103,43 +107,74 @@ docs/screenshots/     真实运行游戏时截取的截图
 - 界面按钮/滑条/文本框等基础图片、`screens.rpy`、`gui.rpy`、中文翻译文件来自 Ren'Py SDK 自带的官方项目模板
   （Ren'Py 以 MIT/LGPL 等许可发布），字体为 SIL OFL 1.1 的思源黑体。未使用来源不明的网络图片。
 - V0.1 没有音乐与音效。
+- 第三方内容的逐项来源与许可见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。`the_question` 示例自带的第三方插画与头像已从仓库中移除。
 
 ## 实际测试状态（如实记录）
 
 测试环境：Linux 云端虚拟机，Ren'Py **8.3.7**（官方 SDK `renpy-8.3.7-sdk.tar.bz2`，从 renpy.org 下载），
-软件渲染（Mesa llvmpipe），无声卡。
+软件渲染（Mesa llvmpipe），无声卡。以下均为 AI Agent 在该环境中实际执行的结果（V0.1 验收阶段，2026-10-19）。
 
 | 项目 | 结果 |
 | --- | --- |
-| `renpy.sh <项目> lint` | **已运行，通过**：无错误、无警告，仅输出统计与一条通用建议（建议开启 `config.check_conflicting_properties`）。统计：83 个对话块、3 个菜单、24 个界面 |
-| `tools/check_project.py` 静态检查 | **已运行，通过**：9 个 label、7 个图像、2 个角色、4 个 default 变量 |
-| 实际启动游戏 | **已运行**：游戏可在 Ren'Py 8.3.7 中启动并进入主菜单，截图见 `docs/screenshots/` |
-| 自动化通关 | **已运行**：`path_true`、`path_half`、`path_miss` 三个 Ren'Py 测试用例分别走到三个结局（用 `assert` 校验信任度分别为 6 / 1 / −6），并回到主菜单后正常退出 |
-| 真人试玩 | **未进行**：没有由人完整游玩并计时；3–5 分钟为按文字量的估算 |
-| Ren'Py Launcher 图形界面导入 | **未验证**：只通过命令行 `renpy.sh` 运行；项目为标准结构（`game/`、`options.rpy`、`gui.rpy`、`screens.rpy`），理论上可导入 |
-| Windows / macOS / Android 等平台、打包发行 | **未验证** |
+| `renpy.sh <项目> lint` | **已运行，退出码 0**：无错误、无警告，仅输出统计与一条通用建议（建议开启 `config.check_conflicting_properties`）。统计：83 个对话块、3 个菜单、24 个界面 |
+| `python3 tools/check_project.py` | **已运行，通过**：9 个 label、7 个图像、2 个角色、4 个 default 变量 |
+| `test path_true` | **通过**：到达 `ending_true`（`assert trust == 6`），回到主菜单后退出，退出码 0 |
+| `test path_half` | **通过**：到达 `ending_half`（`assert trust == 1`），回到主菜单后退出，退出码 0 |
+| `test path_miss` | **通过**：到达 `ending_miss`（`assert trust == -6`），回到主菜单后退出，退出码 0 |
+| `test save_load` | **通过**：后巷处存档（trust=2）→ 继续选择使 trust=0 → 读档后 trust 回到 2，并能再次走完第二次选择（trust=4）。存/读档由 `FileSave`/`FileLoad` 动作触发 |
+| `test restart` | **通过**：中途用 `MainMenu` 返回主菜单后再次“开始游戏”，`trust`、`refused_guide` 被重置 |
+| 真实剧情截图 | **已完成**：由 testcase 驱动真实流程截取 15 张（见下），不含临时 label 截图 |
+| 中文字体 | 已检查：剧本、选项、界面字符均在字体字库内；验收时发现结局卡片标题中的间隔号“·”显示为方块，已改为“：” |
+| 选项遮挡立绘 | 已修复：选项原本盖住角色面部，现将选项下移到面部与对话框之间（`screens.rpy` 中 `choice_vbox`），截图确认不再遮脸，仍会盖住躯干部分 |
+| 通过界面按钮手动点击“存档/读档/设置”页 | **未验证**（只测试了存档动作本身，没有用 testcase 点击存档页面的格子；设置页仅在上一阶段截图中见过） |
+| 多次存档覆盖、自动存档、快速存档(F5/F9)、回滚 | **未验证** |
+| 真人试玩与阅读时长 | **未进行**：3–5 分钟仅为按文字量的估算 |
+| Ren'Py Launcher 图形界面导入 | **未验证**：只通过命令行 `renpy.sh` 运行；项目为标准结构，理论上可导入 |
+| Windows / macOS / Android、打包发行 | **未验证** |
 | 声音 | **未验证**（V0.1 无音频，测试环境也无声卡） |
 
-截图（均为真实运行游戏时用 `renpy.screenshot` 截取，1280×720）：
+### 截图
 
-| 主菜单 | 后巷 |
+均为真实运行游戏时用 `renpy.screenshot` 截取（1280×720），位于 `docs/screenshots/`。
+截图由 `tools/capture_screenshots.rpy` 驱动 testcase 走完真实剧情后截取（使用方法见该文件头部注释）。
+
+| 主菜单 | 对话：林岚（微笑） |
 | --- | --- |
-| ![主菜单](docs/screenshots/01-main-menu.png) | ![后巷](docs/screenshots/02-alley.png) |
+| ![主菜单](docs/screenshots/01-main-menu.png) | ![对话 林岚](docs/screenshots/02-dialogue-fox-smile.png) |
 
-| 灯塔 | 结局一对白 |
+| 对话：灰舟（忧虑） | 信封预览 |
 | --- | --- |
-| ![灯塔](docs/screenshots/03-lighthouse.png) | ![结局一](docs/screenshots/04-ending-true.png) |
+| ![对话 灰舟](docs/screenshots/03-dialogue-wolf-worried.png) | ![信封](docs/screenshots/05-letter-card.png) |
 
-选择界面截图 `docs/screenshots/05-choice-menu.png` 是在临时测试用的 label 中放置一份相同文字的菜单后截取，仅用于展示选项样式，该临时 label 未提交。
+| 选择 1（栈桥） | 选择 2（后巷） |
+| --- | --- |
+| ![选择1](docs/screenshots/04-choice-1-dock.png) | ![选择2](docs/screenshots/07-choice-2-alley.png) |
+
+| 选择 3（灯塔） | 后巷 / 灯塔场景 |
+| --- | --- |
+| ![选择3](docs/screenshots/09-choice-3-lighthouse.png) | ![后巷](docs/screenshots/06-dialogue-alley.png) ![灯塔](docs/screenshots/08-dialogue-lighthouse.png) |
+
+| 结局一对白 | 结局一卡片 |
+| --- | --- |
+| ![结局一对白](docs/screenshots/10-ending-true-dialogue.png) | ![结局一卡片](docs/screenshots/11-ending-true-card.png) |
+
+| 结局二对白 | 结局二卡片 |
+| --- | --- |
+| ![结局二对白](docs/screenshots/12-ending-half-dialogue.png) | ![结局二卡片](docs/screenshots/13-ending-half-card.png) |
+
+| 结局三对白 | 结局三卡片 |
+| --- | --- |
+| ![结局三对白](docs/screenshots/14-ending-miss-dialogue.png) | ![结局三卡片](docs/screenshots/15-ending-miss-card.png) |
 
 ## 已知问题 / 限制
 
 - 美术是代码绘制的简易占位图，立绘为静态、无口型与动作
-- 选项菜单会盖住立绘上半部分（默认菜单布局），后续可自定义 `choice` 界面
-- 界面（按钮、滑条等）沿用官方模板的默认橙色主题，仅调整了字体与部分颜色，尚未做统一视觉设计
+- 选项菜单位于面部下方，仍会盖住立绘躯干部分（不遮脸）
+- 界面（按钮、滑条等）沿用官方模板的橙色主题，仅调整了字体与部分颜色，尚未做统一视觉设计
 - 无音乐、无音效；无 CG、无角色语音
 - 结局回顾界面尚未实现（仅记录了 `persistent.endings_seen`）
-- 开始游戏默认文字速度为每秒 40 字，可在“设置”里调整
+- 默认文字速度为每秒 40 字，可在“设置”里调整
+- 设置页中的语言列表含多种语言（来自官方翻译），选择非中文语言时剧情文本仍为中文
 
 ## 版本计划
 
