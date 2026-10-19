@@ -30,16 +30,23 @@ init python:
         ("08_dialogue_lighthouse", "say", "灯塔没有亮"),
         ("09_choice_3_lighthouse", "choice", "信使的职责"),
         ("10_ending_true_dialogue", "say", "我就是灯塔看守人"),
-        ("11_ending_true_card", "say", "结局一"),
+        ("11_ending_true_card", "screen_key", ("ending_card", "true")),
         ("12_ending_half_dialogue", "say", "把信放进塔下的信箱吧"),
-        ("13_ending_half_card", "say", "结局二"),
+        ("13_ending_half_card", "screen_key", ("ending_card", "half")),
         ("14_ending_miss_dialogue", "say", "我明白了。信使应该谨慎"),
-        ("15_ending_miss_card", "say", "结局三"),
+        ("15_ending_miss_card", "screen_key", ("ending_card", "miss")),
+        ("16_menu_save", "screen", "save"),
+        ("17_menu_preferences", "screen", "preferences"),
+        ("18_menu_history", "screen", "history"),
+        ("19_menu_about", "screen", "about"),
     ]
 
     def _shot_hit(kind, pat):
         if kind == "screen":
             return renpy.get_screen(pat) is not None
+        if kind == "screen_key":
+            s = renpy.get_screen(pat[0])
+            return bool(s) and s.scope.get("key") == pat[1]
         if kind == "say":
             s = renpy.get_screen("say")
             return bool(s) and pat in str(s.scope.get("what", ""))
@@ -98,6 +105,7 @@ init python:
 
 
 testcase shots_true:
+    $ renpy.set_physical_size((1280, 720))
     $ _preferences.text_cps = 0
     $ shot_run = True
     pause 0.2 until run ShotWait("01_main_menu")
@@ -132,4 +140,21 @@ testcase shots_miss:
     "我不会把信交给"
     pause 0.2 until run ShotWait("15_ending_miss_card")
     click until label main_menu_screen
+    $ renpy.quit()
+
+
+## 菜单类界面：从真实剧情中途打开（后巷选项出现后），逐个截图再返回
+testcase shots_menus:
+    $ _preferences.text_cps = 0
+    $ shot_run = True
+    run Start()
+    pause 0.2 until run ShotWait("04_choice_1_dock")
+    run ShowMenu("save")
+    pause 0.2 until run ShotWait("16_menu_save")
+    run ShowMenu("preferences")
+    pause 0.2 until run ShotWait("17_menu_preferences")
+    run ShowMenu("history")
+    pause 0.2 until run ShotWait("18_menu_history")
+    run ShowMenu("about")
+    pause 0.2 until run ShotWait("19_menu_about")
     $ renpy.quit()
