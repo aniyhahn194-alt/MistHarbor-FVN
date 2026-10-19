@@ -2,7 +2,8 @@
 
 An original Furry visual novel built with Ren'Py and AI-assisted development.
 
-> 当前版本：**V0.1 原型**（可从头玩到三个结局之一并回到主菜单）
+> 当前版本：**V0.2.0-p1**（视觉风格与交互界面升级；剧情、三次选择、三个结局不变）。V0.1 公开试玩版仍是 `main` 上的 V0.1.0，本分支尚未部署。
+> 本轮做了什么、没做什么、哪些未验证：见 [docs/V0.2-P1-STATUS.md](docs/V0.2-P1-STATUS.md)；方案见 [docs/V0.2-P1-PLAN.md](docs/V0.2-P1-PLAN.md)；专业美术需求见 [docs/ART_BRIEF.md](docs/ART_BRIEF.md)。
 
 ## 项目介绍
 
@@ -20,11 +21,24 @@ An original Furry visual novel built with Ren'Py and AI-assisted development.
 | 引擎 | Ren'Py 8.x（开发与验证使用 8.3.7） |
 | 脚本 | Ren'Py Script（`.rpy`），少量 Python（信任度辅助函数） |
 | 素材生成 | Python 3 + Pillow（仅 `tools/`，**不是**游戏运行依赖） |
-| 界面 | Ren'Py 官方示例项目 `the_question` 的 GUI 模板（1280×720），自制主菜单/游戏菜单背景与窗口图标 |
+| 界面 | 基于 Ren'Py 官方示例项目 `the_question` 的 GUI 模板结构（1280×720）；V0.2-P1 起全部界面图片由 `tools/generate_ui.py` 用 Pillow 原创绘制，界面用 Screen Language / Style / ATL 实现 |
 | 字体 | 思源黑体 Lite（`SourceHanSansLite.ttf`，SIL OFL 1.1，取自 Ren'Py SDK 的 `sdk-fonts`） |
 | 本地化 | 默认简体中文界面，`game/tl/schinese/` 来自 Ren'Py SDK 自带的官方中文翻译 |
 
-## 游戏功能（V0.1）
+## V0.2-P1：视觉与交互界面升级
+
+风格方向：**夜雾港口 · 轻悬疑 · 克制的情感氛围**，深蓝 + 冷青为主色，灯塔暖金做高亮。详见 [docs/V0.2-P1-PLAN.md](docs/V0.2-P1-PLAN.md)。
+
+- **主菜单**：灯塔夜景底图 + 暗角，灯塔光晕呼吸、光束缓慢扫过、两层雾气漂移（均为 ATL），标题淡入，导航按钮带灯条
+- **对话框 / 姓名框**：深蓝半透明面板，字号 26→32、姓名 30→36
+- **快捷菜单**：移到对话框右上角，按钮高 80px（844×390 横屏约 43 CSS px，V0.1 约 16），字号 28px（约 15 CSS px，V0.1 约 7.5）；触屏隐藏“快存/快读”
+- **选项按钮**：圆角面板 + 灯点，画面压暗，居中错落淡入；角色缩小并贴向两侧，选项不再盖住脸
+- **结局卡片**：新 `ending_card` 屏幕（`game/ending_card.rpy`）：序号、名称、尾声句、三盏“灯”显示已解锁结局、“返回标题”大按钮；结局一/二带灯塔光束
+- **存档 / 设置 / 历史 / 关于 / 确认框 / 提示 / 跳过指示**：统一重绘；去掉设置里对本作无意义的多语言列表与尚无音频的音量滑条；修正“关于”页里模板遗留的错误署名
+- **转场与细节**：夜雾色淡入淡出、场景雾层漂移、信封预览改为羊皮纸卡片
+- **没有做**：正式立绘/背景（需专业美术，见 ART_BRIEF）、音频、新剧情、新系统
+
+## 游戏功能（V0.1 起保持不变）
 
 1. 两位角色：灰舟（狼）、林岚（狐），均用 `Character` 定义并带颜色名牌
 2. 三个不同背景：雾中栈桥、旧信使公会后巷、夜晚灯塔
@@ -65,8 +79,9 @@ An original Furry visual novel built with Ren'Py and AI-assisted development.
 辅助脚本：
 
 ```bash
-python3 tools/check_project.py              # 静态检查 label/jump/图片/变量（无需 SDK）
-pip install pillow && python3 tools/generate_assets.py   # 重新生成占位素材
+python3 tools/check_project.py              # 静态检查 label/jump/图片/变量/界面文件（无需 SDK）
+pip install pillow && python3 tools/generate_assets.py   # 重新生成占位背景/立绘素材
+pip install pillow && python3 tools/generate_ui.py       # 重新生成 V0.2 界面素材（game/gui/**）
 ```
 
 Ren'Py 内置自动化测试（需要图形环境，每条路径对应一个结局）：
@@ -80,6 +95,8 @@ Ren'Py 内置自动化测试（需要图形环境，每条路径对应一个结�
 ```
 
 ## Windows 发行包与试玩
+
+> 以下为 V0.1.0 的发行包；V0.2-P1 **未**重新构建 / 测试 Windows 包（`build.classify` 未变，`tests.rpy` 仍不入包，但本轮未实际打包验证）。
 
 - **发行包**：用 Ren'Py 官方 `distribute` 命令构建 `MistHarbor-0.1.0-win.zip`（约 30 MB，内含 `MistHarbor.exe`、Windows 版 Python 运行时、全部脚本/图片/字体）。
   压缩包不提交到 Git 仓库（二进制较大且可随时重建），获取与重建方法见 [docs/WINDOWS_PLAYTEST.md](docs/WINDOWS_PLAYTEST.md)。
@@ -95,7 +112,9 @@ Ren'Py 内置自动化测试（需要图形环境，每条路径对应一个结�
 - **本地预览**：`node tools/web_test/serve.js <产物目录> 8000`，浏览器打开 `http://127.0.0.1:8000/`。
 - **手机访问**：目前**没有**公开的在线试玩链接。需要所有者批准后，才能用 GitHub Pages 等方式托管（部署配置 `.github/workflows/web-build-pages.yml` 仅手动触发，默认不发布；步骤见 docs/WEB_PLAYTEST.md）。
 
-实际完成与测试（Linux 云端，Ren'Py 8.3.7，桌面 Google Chrome 154 via Playwright；**不是**真实手机，**未**做 iOS Safari / Android Chrome 真机测试）：
+> V0.2-P1 的 Web 构建与浏览器测试结果见 [docs/V0.2-P1-STATUS.md](docs/V0.2-P1-STATUS.md)（桌面 Chromium 与 844×390 触控模拟，**不是**真机）。下表是 V0.1 阶段的记录，保留作对照。
+
+V0.1 阶段实际完成与测试（Linux 云端，Ren'Py 8.3.7，桌面 Google Chrome 154 via Playwright；**不是**真实手机，**未**做 iOS Safari / Android Chrome 真机测试）：
 
 | 项目 | 结果 |
 | --- | --- |
@@ -112,22 +131,28 @@ Ren'Py 内置自动化测试（需要图形环境，每条路径对应一个结�
 
 ```
 game/
-  script.rpy        主剧本：角色、图像、变量、三幕剧情、三个结局
+  script.rpy        主剧本：角色、图像、变量、三幕剧情、三个结局、场景雾层与转场
+  ending_card.rpy   V0.2 结局卡片屏幕与其样式 / 动画
   options.rpy       基础配置（名称、版本、默认语言、转场、存档目录）
-  gui.rpy           GUI 配置（字体、颜色、尺寸 1280x720）
-  screens.rpy       界面（对话、菜单、存档、设置等，来自官方模板）
+  gui.rpy           GUI 配置（V0.2 配色、字号、尺寸 1280x720）
+  screens.rpy       界面（主菜单、对话、选项、快捷菜单、存档、设置等，V0.2 重做）
   tests.rpy         Ren'Py 自动化测试用例（三条通关路径、存读档、重新开始）
   images/           游戏使用的背景与立绘（PNG）
-  gui/              界面素材（主菜单/游戏菜单背景、图标为自制，按钮等为官方模板）
+  gui/              界面素材（V0.2 起全部由 tools/generate_ui.py 原创绘制；fx/ 为光束 / 雾 / 光晕动画层）
   fonts/            思源黑体 Lite 及其 OFL 许可文本
   tl/schinese/      Ren'Py 官方简体中文界面翻译
 tools/
-  generate_assets.py  用 Pillow 绘制占位素材（非运行依赖）
+  generate_assets.py  用 Pillow 绘制占位背景 / 立绘（非运行依赖）
+  generate_ui.py      用 Pillow 绘制 V0.2 全部界面素材（非运行依赖）
   check_project.py    静态检查脚本
   capture_screenshots.rpy  驱动真实剧情截图的辅助脚本（需临时复制到 game/，不提交到 game/）
   build_windows.sh    调用官方 distribute 构建 Windows zip（Linux/macOS）
   build_web.sh        调用官方 web_build 构建 HTML5/WebAssembly 版
   web_test/           Playwright 浏览器测试脚本与本地静态服务器（桌面 Chromium）
+docs/V0.2-P1-PLAN.md    V0.2-P1 方案
+docs/V0.2-P1-STATUS.md  V0.2-P1 已实现 / 未实现 / 测试结果 / 未验证项
+docs/ART_BRIEF.md       专业美术需求（角色、表情、背景、尺寸、授权）
+docs/v0.2-p1/screenshots/  V0.2-P1 前后对比截图（Web 浏览器，桌面与手机横屏视口模拟）
 docs/WINDOWS_PLAYTEST.md  Windows 运行/构建指南与试玩清单
 docs/screenshots/     真实运行游戏时截取的截图
 docs/WEB_PLAYTEST.md  Web 版构建、浏览器测试结果、手机访问与部署说明
@@ -139,14 +164,35 @@ THIRD_PARTY_NOTICES.md  第三方内容（Ren'Py 模板、字体、翻译）的�
 
 ## 素材说明
 
-- `game/images/` 下的背景与角色立绘、`game/gui/main_menu.png`、`game_menu.png`、`window_icon.png`
-  全部由 `tools/generate_assets.py` 用 Pillow 绘制，原创、风格为简易占位图，后续会被正式美术替换。
+- `game/images/` 下的背景与角色立绘、`window_icon.png` 由 `tools/generate_assets.py` 用 Pillow 绘制，原创、风格为简易占位图，**需要被专业美术替换**（需求见 [docs/ART_BRIEF.md](docs/ART_BRIEF.md)，不会用低质量占位冒充正式美术）。
+- V0.2 起 `game/gui/**` 的界面图片（面板、按钮、滑条、主菜单 / 游戏菜单底图、光束 / 雾 / 光晕层等）由 `tools/generate_ui.py` 用 Pillow 与代码原创绘制；主菜单 / 游戏菜单底图以占位背景（`bg lighthouse` / `bg dock`）为基础再处理。
 - 界面按钮/滑条/文本框等基础图片、`screens.rpy`、`gui.rpy`、中文翻译文件来自 Ren'Py SDK 自带的官方项目模板
   （Ren'Py 以 MIT/LGPL 等许可发布），字体为 SIL OFL 1.1 的思源黑体。未使用来源不明的网络图片。
-- V0.1 没有音乐与音效。
+- 目前没有音乐与音效。
 - 第三方内容的逐项来源与许可见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。`the_question` 示例自带的第三方插画与头像已从仓库中移除。
 
 ## 实际测试状态（如实记录）
+
+### V0.2-P1（本分支，2026-10-19，Linux 云端，Ren'Py 8.3.7）
+
+| 项目 | 结果 |
+| --- | --- |
+| `renpy.sh <项目> lint` | **已运行，退出码 0**：无错误、无警告（仅一条通用建议）。统计：80 个对话块、3 个菜单、9 个图像、24 个界面 |
+| `python3 tools/check_project.py` | **已运行，通过**：9 个 label、8 个图像、2 个角色、8 个 default 变量 |
+| `test path_true` / `path_half` / `path_miss` | **通过**：分别到达 `ending_true`（trust=6）/ `ending_half`（trust=1）/ `ending_miss`（trust=-6），并回到主菜单 |
+| `test save_load` | **通过**：读档前 trust=0 → 读档后 trust=2 → 重选后 trust=4 |
+| `test restart` | **通过**：返回主菜单后重新开始，变量被重置（trust=0） |
+| 官方 Web 构建（`tools/build_web.sh`） | **成功**：`MistHarbor-FVN-web.zip` 约 45.5 MiB，SHA256 见 [docs/V0.2-P1-STATUS.md](docs/V0.2-P1-STATUS.md)，不提交进 git |
+| 浏览器：桌面 Chromium 1280×720，三条分支 | **通过**：真实点击走完三条路径，到达结局卡片 1 / 2 / 3 并回到主菜单，页面无报错、无失败请求 |
+| 浏览器：844×390 横屏 + 触控 + iPhone UA（**桌面 Chromium 模拟，不是真机**），三条分支 | **通过**：同上 |
+| 浏览器：存档 → 刷新页面 → 读档（桌面 / 手机视口模拟） | **通过**：读档后信任度恢复（到达结局二） |
+| 真实 iPhone / iOS Safari / Android 真机 | **未验证** |
+| GitHub Pages 实际部署、gzip 下的首次加载 | **未验证**（本轮未部署） |
+| 跳过指示（Skip）的画面、音频 | **未验证 / 未涉及** |
+
+V0.2-P1 的详细结果、已实现 / 未实现清单见 [docs/V0.2-P1-STATUS.md](docs/V0.2-P1-STATUS.md)。
+
+### V0.1（历史记录）
 
 测试环境：Linux 云端虚拟机，Ren'Py **8.3.7**（官方 SDK `renpy-8.3.7-sdk.tar.bz2`，从 renpy.org 下载），
 软件渲染（Mesa llvmpipe），无声卡。以下均为 AI Agent 在该环境中实际执行的结果（V0.1 验收阶段，2026-10-19）。
@@ -175,7 +221,24 @@ THIRD_PARTY_NOTICES.md  第三方内容（Ren'Py 模板、字体、翻译）的�
 | Web 构建与浏览器测试 | 见上方“Web 版”章节与 [docs/WEB_PLAYTEST.md](docs/WEB_PLAYTEST.md) |
 | 声音 | **未验证**（V0.1 无音频，测试环境也无声卡） |
 
-### 截图
+### V0.2-P1 前后对比截图
+
+均来自真实剧情流程（Playwright 驱动浏览器里的 Web 构建，**桌面 Chromium**，含 844×390 触控视口模拟，不是真机）。
+“前”= `main` 上的 V0.1，“后”= 本分支。位于 [docs/v0.2-p1/screenshots/](docs/v0.2-p1/screenshots/)：`before-v0.1/`、`after-v0.2/`、`side-by-side/`（左前右后）。
+
+| 手机横屏 主菜单（前 / 后） |
+| --- |
+| ![主菜单](docs/v0.2-p1/screenshots/side-by-side/mobile-01-main-menu.png) |
+
+| 手机横屏 选项（前 / 后） |
+| --- |
+| ![选项](docs/v0.2-p1/screenshots/side-by-side/mobile-03-choice-1.png) |
+
+| 手机横屏 结局一卡片（前 / 后） |
+| --- |
+| ![结局一](docs/v0.2-p1/screenshots/side-by-side/mobile-06-ending-1-card.png) |
+
+### V0.1 阶段截图（Ren'Py 内截取）
 
 均为真实运行游戏时用 `renpy.screenshot` 截取（1280×720），位于 `docs/screenshots/`。
 截图由 `tools/capture_screenshots.rpy` 驱动 testcase 走完真实剧情后截取（使用方法见该文件头部注释）。
@@ -210,24 +273,27 @@ THIRD_PARTY_NOTICES.md  第三方内容（Ren'Py 模板、字体、翻译）的�
 
 ## 已知问题 / 限制
 
-- 美术是代码绘制的简易占位图，立绘为静态、无口型与动作
-- 选项菜单位于面部下方，仍会盖住立绘躯干部分（不遮脸）
-- 界面（按钮、滑条等）沿用官方模板的橙色主题，仅调整了字体与部分颜色，尚未做统一视觉设计
+- 美术（背景与立绘）仍是代码绘制的简易占位图，立绘静态、无口型与动作；需要专业绘制，需求见 [docs/ART_BRIEF.md](docs/ART_BRIEF.md)
+- V0.2-P1 的界面已统一为夜雾港口风格，但**只在桌面 Chromium 的手机视口模拟下检查过手机可读性**，真机（iPhone Safari）观感与触控手感未验证
+- 手机竖屏：V0.1 测试时画面只占屏幕宽度一小条（Ren'Py Web 按 16:9 等比缩放），需横屏游玩；V0.2-P1 **未重新测试竖屏**
+- 触屏模式下隐藏了“快存 / 快读”按钮（F5 / F9 仍可用），存档请用“保存”页
+- 跳过（Skip）指示的画面未截图检查；Web 版首次加载约 45 MB（未压缩）
 - 无音乐、无音效；无 CG、无角色语音
 - 结局回顾界面尚未实现（仅记录了 `persistent.endings_seen`）
 - 默认文字速度为每秒 40 字，可在“设置”里调整
-- 设置页中的语言列表含多种语言（来自官方翻译），选择非中文语言时剧情文本仍为中文
+- “关于 / 帮助”等界面文字仍通过 `game/tl/schinese/` 的官方中文翻译提供；V0.2 设置页已移除多语言列表
 
 ## 版本计划
 
-- **V0.1（当前）**：可玩原型，两位角色、三个场景、三次选择、三个结局
-- **V0.2**：自定义选项/对话框界面，加入背景音乐与基础音效，立绘增加更多表情与站位动画
+- **V0.1（main / 已公开）**：可玩原型，两位角色、三个场景、三次选择、三个结局
+- **V0.2-P1（当前分支）**：视觉风格与交互界面升级（主菜单、对话框、选项、结局卡片、手机横屏可读性），详见 docs/V0.2-P1-STATUS.md
+- **V0.2（后续）**：专业角色立绘与背景替换（按 ART_BRIEF）、背景音乐与基础音效、立绘更多表情与站位动画
 - **V0.3**：结局回顾与章节选择界面，信件物品栏 / 线索笔记，增加支线与更多分支
 - **V0.4+**：替换为正式美术，完善 UI 视觉，打包发布（Windows / macOS / Linux），英文本地化
 
 ## AI 辅助开发说明
 
 本项目由 AI Agent（Cursor Cloud Agent）参与生成，包括：剧情文本、`.rpy` 脚本、素材生成脚本、静态检查脚本和本 README。
-上文“实际测试状态”中的测试均由该 AI Agent 在云端虚拟机的命令行/软件渲染环境中执行并如实记录；
+上文“实际测试状态”中的测试（含 V0.2-P1 部分）均由该 AI Agent 在云端虚拟机的命令行/软件渲染环境中执行并如实记录；
 **没有任何未经验证的运行或测试被声称为已完成**。项目所有者尚未对游戏进行人工完整试玩与评审，
 故内容和代码质量需要人工复核后才能作为最终作品使用。

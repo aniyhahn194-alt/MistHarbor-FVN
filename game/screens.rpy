@@ -203,9 +203,23 @@ style input:
 screen choice(items):
     style_prefix "choice"
 
+    ## 选择时压暗画面，让选项成为视觉中心（不再盖在角色躯干上硬叠）
+    add Solid("#08101ab0") ysize 462 at choice_dim
+
     vbox:
-        for i in items:
-            textbutton i.caption action i.action
+        for n, i in enumerate(items):
+            textbutton i.caption action i.action at choice_in(0.07 * n)
+
+
+transform choice_dim:
+    alpha 0.0
+    linear 0.25 alpha 1.0
+
+transform choice_in(delay=0.0):
+    alpha 0.0
+    yoffset 18
+    pause delay
+    ease 0.3 alpha 1.0 yoffset 0
 
 
 style choice_vbox is vbox
@@ -214,17 +228,22 @@ style choice_button_text is button_text
 
 style choice_vbox:
     xalign 0.5
-    ## 选项放在立绘面部下方、对话框上方，避免遮挡角色的脸和表情
-    ypos 425
+    ## 选项区位于上半屏中央，两侧角色的脸（约 x<330 / x>950）不会被盖住
+    ypos 238
     yanchor 0.5
-
-    spacing 14
+    spacing gui.choice_spacing
 
 style choice_button is default:
     properties gui.button_properties("choice_button")
+    yminimum 96
+    left_padding 66
+    right_padding 42
+    top_padding 20
+    bottom_padding 20
 
 style choice_button_text is default:
     properties gui.text_properties("choice_button")
+    yalign 0.5
 
 
 ## Quick Menu screen ###########################################################
@@ -239,19 +258,23 @@ screen quick_menu():
 
     if quick_menu:
 
+        ## 快捷按钮放在对话框右上角，单个按钮高 80（手机横屏约 43 CSS px），不再挤在屏幕最底边。
         hbox:
             style_prefix "quick"
 
-            xalign 0.5
-            yalign 1.0
+            xalign 1.0
+            xoffset -36
+            ypos config.screen_height - gui.textbox_height + 30
+            spacing 10
 
             textbutton _("Back") action Rollback()
             textbutton _("History") action ShowMenu('history')
             textbutton _("Skip") action Skip() alternate Skip(fast=True, confirm=True)
             textbutton _("Auto") action Preference("auto-forward", "toggle")
             textbutton _("Save") action ShowMenu('save')
-            textbutton _("Q.Save") action QuickSave()
-            textbutton _("Q.Load") action QuickLoad()
+            if not renpy.variant("touch"):
+                textbutton _("Q.Save") action QuickSave()
+                textbutton _("Q.Load") action QuickLoad()
             textbutton _("Prefs") action ShowMenu('preferences')
 
 
@@ -266,10 +289,16 @@ style quick_button is default
 style quick_button_text is button_text
 
 style quick_button:
-    properties gui.button_properties("quick_button")
+    background Frame("gui/button/quick_[prefix_]background.png", 22, 22, tile=False)
+    ysize 80
+    xminimum 100
+    xpadding 20
+    ypadding 0
 
 style quick_button_text:
     properties gui.text_properties("quick_button")
+    xalign 0.5
+    yalign 0.5
 
 
 ################################################################################
@@ -287,7 +316,7 @@ screen navigation():
         style_prefix "navigation"
 
         xpos gui.navigation_xpos
-        yalign 0.5
+        ypos (252 if main_menu else 124)
 
         spacing gui.navigation_spacing
 
@@ -331,10 +360,23 @@ style navigation_button_text is gui_button_text
 
 style navigation_button:
     size_group "navigation"
-    properties gui.button_properties("navigation_button")
+    background Frame("gui/button/nav_[prefix_]background.png", 10, 10, tile=False)
+    xsize 340
+    ysize 62
+    left_padding 34
+    right_padding 12
+    ypadding 0
+
+style navigation_button:
+    variant "touch"
+    ysize 76
 
 style navigation_button_text:
     properties gui.text_properties("navigation_button")
+    size 34
+    idle_color "#d6e2ea"
+    selected_color "#ffffff"
+    yalign 0.5
 
 
 ## Main Menu screen ############################################################
@@ -352,51 +394,98 @@ screen main_menu():
 
     add gui.main_menu_background
 
-    ## This empty frame darkens the main menu.
-    frame:
-        pass
+    ## 夜雾港口的动态细节：灯塔光晕呼吸、光束缓慢扫过、两层雾气漂移（均为原生 ATL）
+    add "gui/fx/fx_glow.png" at lamp_pulse
+    add "gui/fx/fx_beam.png" at beam_sweep
+    add "gui/fx/fx_fog_b.png" at fog_drift_menu(95, 0.55)
+    add "gui/fx/fx_fog_a.png" at fog_drift_menu(60, 0.6)
 
-    ## The use statement includes another screen inside this one. The actual
-    ## contents of the main menu are in the navigation screen.
+    ## 左侧渐隐的深蓝面板，托住标题与导航
+    add "gui/overlay/main_menu.png"
+
     use navigation
 
     if gui.show_name:
 
-        vbox:
-            text "[config.name!t]":
-                style "main_menu_title"
+        vbox at title_in:
+            style "main_menu_title_box"
 
-            text "Letters from Mist Harbor  V[config.version]":
-                style "main_menu_version"
+            text "LETTERS FROM MIST HARBOR" style "main_menu_kicker"
+            text "[config.name!t]" style "main_menu_title"
+            add "gui/divider.png" xalign 0.0
+            text "V[config.version]" style "main_menu_version"
+
+
+transform title_in:
+    alpha 0.0
+    xoffset -24
+    pause 0.15
+    ease 0.9 alpha 1.0 xoffset 0
+
+transform lamp_pulse:
+    anchor (0.5, 0.5)
+    pos (901, 167)
+    zoom 1.7
+    alpha 0.28
+    block:
+        ease 2.6 alpha 0.5
+        ease 2.6 alpha 0.28
+        repeat
+
+transform beam_sweep:
+    anchor (0.5, 0.5)
+    pos (901, 167)
+    transform_anchor True
+    rotate -3.0
+    alpha 0.0
+    linear 1.5 alpha 1.0
+    block:
+        ease 7.0 rotate 4.0
+        ease 7.0 rotate -3.0
+        repeat
+
+transform fog_drift_menu(period, strength):
+    ## 雾图原始宽 1280、周期 640；放大 2 倍后周期 1280，位移恰好一个周期即可无缝循环。
+    zoom 2.0
+    alpha strength
+    xpos 0
+    ypos 360
+    linear period xpos -1280
+    repeat
 
 
 style main_menu_frame is empty
 style main_menu_vbox is vbox
 style main_menu_text is gui_text
+style main_menu_title_box is vbox
+style main_menu_kicker is main_menu_text
 style main_menu_title is main_menu_text
 style main_menu_version is main_menu_text
 
-style main_menu_frame:
-    xsize 280
-    yfill True
-
-    background "gui/overlay/main_menu.png"
-
-style main_menu_vbox:
-    xalign 1.0
-    xoffset -20
-    xsize 960
-    yalign 1.0
-    yoffset -20
+style main_menu_title_box:
+    xpos 44
+    ypos 28
+    spacing 0
 
 style main_menu_text:
     properties gui.text_properties("main_menu", accent=True)
 
+style main_menu_kicker:
+    size 22
+    color "#5fb8c4"
+    kerning 3
+
 style main_menu_title:
     properties gui.text_properties("title")
+    size 96
+    color "#f6d58e"
+    outlines [(3, "#0b1622", 0, 2)]
+    kerning 6
 
 style main_menu_version:
-    properties gui.text_properties("version")
+    size 22
+    color "#8fa6b6"
+    ypos 6
 
 
 ## Game Menu screen ############################################################
@@ -488,22 +577,22 @@ style return_button is navigation_button
 style return_button_text is navigation_button_text
 
 style game_menu_outer_frame:
-    bottom_padding 30
-    top_padding 120
+    bottom_padding 24
+    top_padding 116
 
     background "gui/overlay/game_menu.png"
 
 style game_menu_navigation_frame:
-    xsize 280
+    xsize 380
     yfill True
 
 style game_menu_content_frame:
-    left_margin 40
+    left_margin 16
     right_margin 20
     top_margin 10
 
 style game_menu_viewport:
-    xsize 920
+    xsize 850
 
 style game_menu_vscrollbar:
     unscrollable gui.unscrollable
@@ -512,18 +601,28 @@ style game_menu_side:
     spacing 10
 
 style game_menu_label:
-    xpos 50
-    ysize 120
+    xpos 396
+    ysize 110
 
 style game_menu_label_text:
-    size gui.title_text_size
+    size 56
     color gui.accent_color
     yalign 0.5
 
 style return_button:
-    xpos gui.navigation_xpos
-    yalign 1.0
-    yoffset -30
+    size_group None
+    background Frame("gui/button/quick_[prefix_]background.png", 22, 22, tile=False)
+    xalign 1.0
+    xoffset -28
+    ypos 22
+    xsize 190
+    ysize 72
+    left_padding 20
+    right_padding 20
+
+style return_button_text:
+    xalign 0.5
+    size 32
 
 
 ## About screen ################################################################
@@ -549,51 +648,37 @@ screen about():
             label "[config.name!t]"
             text _("[config.version!t]\n")
 
-            hbox:
-                spacing 15
-                text _("Updated Character Art") style "about_small"
-                text _("Deji")
+            text "《雾港来信》是一部原创的拟人化（Furry）视觉小说。" size 28
+            null height 10
 
             hbox:
                 spacing 15
-                text _("Original Character Art") style "about_small"
-                text _("Derik")
-
-            null height 15
+                text "剧情与脚本" style "about_small"
+                text "原创（AI 辅助创作，见 README）" size 28
 
             hbox:
                 spacing 15
-                text _("Updated Background Art") style "about_small"
-                text _("Mugenjohncel")
+                text "界面素材" style "about_small"
+                text "原创，由 Pillow 代码绘制" size 28
 
             hbox:
                 spacing 15
-                text _("Original Background Art") style "about_small"
-                text _("DaFool")
-
-            null height 15
+                text "角色与背景" style "about_small"
+                text "原创占位图，后续将由专业绘制替换" size 28
 
             hbox:
                 spacing 15
-                text _("Music By") style "about_small"
-                text _("Alessio")
-
-            null height 15
+                text "字体" style "about_small"
+                text "思源黑体 Lite（SIL OFL 1.1）" size 28
 
             hbox:
                 spacing 15
-                text _("Update Written By") style "about_small"
-                text _("Lore")
-
-            hbox:
-                spacing 15
-                text _("Originally Written By ") style "about_small"
-                text _("mikey (ATP Projects)")
-
+                text "音乐与音效" style "about_small"
+                text "暂无" size 28
 
             text _("\nMade with {a=https://www.renpy.org/}Ren'Py{/a} [renpy.version_only]")
             null height 15
-            text _("[renpy.license!t]") size 20
+            text _("[renpy.license!t]") size 22
 
 
 style about_label is gui_label
@@ -604,8 +689,9 @@ style about_label_text:
     size gui.label_text_size
 
 style about_small:
-    size 20
-    minwidth 260
+    size 26
+    color "#8fa6b6"
+    minwidth 220
     textalign 1.0
     yalign 0.9
 
@@ -677,7 +763,7 @@ screen file_slots(title):
 
                         add FileScreenshot(slot) xalign 0.5
 
-                        text FileTime(slot, format=_("{#file_time}%A, %B %d %Y, %H:%M"), empty=_("empty slot")):
+                        text FileTime(slot, format="%m月%d日 %H:%M", empty="空存档位"):
                             style "slot_time_text"
 
                         text FileSaveName(slot):
@@ -723,7 +809,7 @@ style slot_name_text is slot_button_text
 
 style page_label:
     xpadding 50
-    ypadding 3
+    ypadding 4
 
 style page_label_text:
     textalign 0.5
@@ -735,9 +821,11 @@ style page_button:
 
 style page_button_text:
     properties gui.text_properties("page_button")
+    size 26
 
 style slot_button:
     properties gui.button_properties("slot_button")
+    padding (6, 6, 6, 6)
 
 style slot_button_text:
     properties gui.text_properties("slot_button")
@@ -754,17 +842,13 @@ screen preferences():
 
     tag menu
 
-    if renpy.mobile:
-        $ cols = 2
-    else:
-        $ cols = 4
-
     use game_menu(_("Preferences"), scroll="viewport"):
 
         vbox:
 
             hbox:
                 box_wrap True
+                spacing 30
 
                 if renpy.variant("pc") or renpy.variant("web"):
 
@@ -784,34 +868,7 @@ screen preferences():
                 ## Additional vboxes of type "radio_pref" or "check_pref" can be
                 ## added here, to add additional creator-defined preferences.
 
-#begin language_picker
-
-                vbox:
-                    style_prefix "radio"
-                    label _("Language")
-
-                    textbutton "English" text_font "DejaVuSans.ttf" action Language(None)
-                    textbutton "Česky" text_font "DejaVuSans.ttf" action Language("czech")
-                    textbutton "Dansk" text_font "DejaVuSans.ttf" action Language("danish")
-                    textbutton "Français" text_font "DejaVuSans.ttf" action Language("french")
-                    textbutton "Italiano" text_font "DejaVuSans.ttf" action Language("italian")
-                    textbutton "Bahasa Melayu" text_font "DejaVuSans.ttf" action Language("malay")
-                    textbutton "Русский" text_font "DejaVuSans.ttf" action Language("russian")
-
-                vbox:
-                    style_prefix "radio"
-                    label _(" ")
-
-                    textbutton "Español" text_font "DejaVuSans.ttf" action Language("spanish")
-                    textbutton "Українська" text_font "DejaVuSans.ttf" action Language("ukrainian")
-                    textbutton "日本語" text_font "SourceHanSansLite.ttf" action Language("japanese")
-                    textbutton "한국어" text_font "SourceHanSansLite.ttf" action Language("korean")
-                    textbutton "简体中文" text_font "SourceHanSansLite.ttf" action Language("schinese")
-                    textbutton "繁體中文" text_font "SourceHanSansLite.ttf" action Language("tchinese")
-
-#end language_picker
-
-            null height (4 * gui.pref_spacing)
+            null height (2 * gui.pref_spacing)
 
             hbox:
                 style_prefix "slider"
@@ -827,35 +884,27 @@ screen preferences():
 
                     bar value Preference("auto-forward time")
 
-                vbox:
+                ## V0.2 尚无音频资源：音量滑条暂不显示（后续加入音频时再打开）。
+                if gui.show_audio_prefs and (config.has_music or config.has_sound):
 
-                    if config.has_music:
-                        label _("Music Volume")
+                    vbox:
 
-                        hbox:
-                            bar value Preference("music volume")
+                        if config.has_music:
+                            label _("Music Volume")
 
-                    if config.has_sound:
+                            hbox:
+                                bar value Preference("music volume")
 
-                        label _("Sound Volume")
+                        if config.has_sound:
 
-                        hbox:
-                            bar value Preference("sound volume")
+                            label _("Sound Volume")
 
-                            if config.sample_sound:
-                                textbutton _("Test") action Play("sound", config.sample_sound)
+                            hbox:
+                                bar value Preference("sound volume")
 
+                                if config.sample_sound:
+                                    textbutton _("Test") action Play("sound", config.sample_sound)
 
-                    if config.has_voice:
-                        label _("Voice Volume")
-
-                        hbox:
-                            bar value Preference("voice volume")
-
-                            if config.sample_voice:
-                                textbutton _("Test") action Play("voice", config.sample_voice)
-
-                    if config.has_music or config.has_sound or config.has_voice:
                         null height gui.pref_spacing
 
                         textbutton _("Mute All"):
@@ -891,13 +940,13 @@ style mute_all_button_text is check_button_text
 
 style pref_label:
     top_margin gui.pref_spacing
-    bottom_margin 2
+    bottom_margin 4
 
 style pref_label_text:
     yalign 1.0
 
 style pref_vbox:
-    xsize 225
+    xsize 380
 
 style radio_vbox:
     spacing gui.pref_button_spacing
@@ -920,7 +969,7 @@ style check_button_text:
     properties gui.text_properties("check_button")
 
 style slider_slider:
-    xsize 350
+    xsize 600
 
 style slider_button:
     properties gui.button_properties("slider_button")
@@ -931,7 +980,7 @@ style slider_button_text:
     properties gui.text_properties("slider_button")
 
 style slider_vbox:
-    xsize 450
+    xsize 700
 
 
 ## History screen ##############################################################
@@ -985,8 +1034,6 @@ style history_window is empty
 
 style history_name is gui_label
 style history_name_text is gui_label_text
-style history_text is gui_text
-
 style history_text is gui_text
 
 style history_label is gui_label
@@ -1220,7 +1267,7 @@ screen confirm(message, yes_action, no_action):
 
             hbox:
                 xalign 0.5
-                spacing 100
+                spacing 60
 
                 textbutton _("Yes") action yes_action
                 textbutton _("No") action no_action
@@ -1236,7 +1283,7 @@ style confirm_button is gui_medium_button
 style confirm_button_text is gui_medium_button_text
 
 style confirm_frame:
-    background Frame([ "gui/confirm_frame.png", "gui/frame.png"], gui.confirm_frame_borders, tile=gui.frame_tile)
+    background Frame("gui/frame.png", gui.confirm_frame_borders, tile=gui.frame_tile)
     padding gui.confirm_frame_borders.padding
     xalign .5
     yalign .5
@@ -1244,12 +1291,20 @@ style confirm_frame:
 style confirm_prompt_text:
     textalign 0.5
     layout "subtitle"
+    size 34
 
 style confirm_button:
-    properties gui.button_properties("confirm_button")
+    background Frame("gui/button/quick_[prefix_]background.png", 22, 22, tile=False)
+    xminimum 190
+    ysize 80
+    xpadding 30
+    ypadding 0
 
 style confirm_button_text:
     properties gui.text_properties("confirm_button")
+    size 32
+    xalign 0.5
+    yalign 0.5
 
 
 ## Skip indicator screen #######################################################
@@ -1296,11 +1351,15 @@ style skip_triangle is skip_text
 
 style skip_frame:
     ypos gui.skip_ypos
+    xpos 24
     background Frame("gui/skip.png", gui.skip_frame_borders, tile=gui.frame_tile)
     padding gui.skip_frame_borders.padding
+    ysize 64
 
 style skip_text:
     size gui.notify_text_size
+    color "#f3c677"
+    yalign 0.5
 
 style skip_triangle:
     ## We have to use a font that has the BLACK RIGHT-POINTING SMALL TRIANGLE
@@ -1339,12 +1398,16 @@ style notify_text is gui_text
 
 style notify_frame:
     ypos gui.notify_ypos
+    xpos 24
+    ysize 60
 
     background Frame("gui/notify.png", gui.notify_frame_borders, tile=gui.frame_tile)
     padding gui.notify_frame_borders.padding
 
 style notify_text:
     properties gui.text_properties("notify")
+    yalign 0.5
+    color "#eef3f6"
 
 
 ## NVL screen ##################################################################
@@ -1463,73 +1526,3 @@ style nvl_button:
 
 style nvl_button_text:
     properties gui.text_properties("nvl_button")
-
-
-
-################################################################################
-## Mobile Variants
-################################################################################
-
-style pref_vbox:
-    variant "medium"
-    xsize 450
-
-## Since a mouse may not be present, we replace the quick menu with a version
-## that uses fewer and bigger buttons that are easier to touch.
-screen quick_menu():
-    variant "touch"
-
-    zorder 100
-
-    hbox:
-        style_prefix "quick"
-
-        xalign 0.5
-        yalign 1.0
-
-        textbutton _("Back") action Rollback()
-        textbutton _("Skip") action Skip() alternate Skip(fast=True, confirm=True)
-        textbutton _("Auto") action Preference("auto-forward", "toggle")
-        textbutton _("Menu") action ShowMenu()
-
-
-style window:
-    variant "small"
-    background "gui/phone/textbox.png"
-
-style nvl_window:
-    variant "small"
-    background "gui/phone/nvl.png"
-
-style main_menu_frame:
-    variant "small"
-    background "gui/phone/overlay/main_menu.png"
-
-style game_menu_outer_frame:
-    variant "small"
-    background "gui/phone/overlay/game_menu.png"
-
-style game_menu_navigation_frame:
-    variant "small"
-    xsize 340
-
-style game_menu_content_frame:
-    variant "small"
-    top_margin 0
-
-style pref_vbox:
-    variant "small"
-    xsize 400
-
-style slider_pref_vbox:
-    variant "small"
-    xsize None
-
-style slider_pref_slider:
-    variant "small"
-    xsize 600
-
-# Shrink the title.
-style main_menu_vbox:
-    variant "small"
-    xsize 900

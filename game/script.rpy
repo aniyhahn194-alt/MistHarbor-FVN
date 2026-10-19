@@ -1,4 +1,4 @@
-## script.rpy —— 《雾港来信》V0.1 主剧本
+## script.rpy —— 《雾港来信》主剧本（V0.2-P1：剧情文本与分支不变，仅升级视觉与转场）
 ##
 ## 剧情结构（共 3 个分支选择 + 3 个结局）：
 ##   start
@@ -16,8 +16,8 @@
 ################################################################################
 
 ## image= 参数让 "hz worried" 这样的写法可以在说话的同时切换表情。
-define hz = Character("灰舟", color="#8fb4e8", image="huizhou")
-define ll = Character("林岚", color="#f0a060", image="linlan")
+define hz = Character("灰舟", color="#9fd0ee", image="huizhou")
+define ll = Character("林岚", color="#f4b46c", image="linlan")
 
 
 ################################################################################
@@ -29,11 +29,12 @@ image bg alley = "images/bg_alley.png"
 image bg lighthouse = "images/bg_lighthouse.png"
 
 ## 立绘：原图 640x1040，缩放到适合 720p 画面的大小。
+## V0.2 缩小到 0.56：脸部集中在两侧，选项菜单与对话框右上角的快捷按钮都不再遮脸。
 ## 图像名第一个词是 tag，同一个 tag 的新图像会替换旧图像（即切换表情）。
-image huizhou normal = Transform("images/huizhou_normal.png", zoom=0.64)
-image huizhou worried = Transform("images/huizhou_worried.png", zoom=0.64)
-image linlan normal = Transform("images/linlan_normal.png", zoom=0.64)
-image linlan smile = Transform("images/linlan_smile.png", zoom=0.64)
+image huizhou normal = Transform("images/huizhou_normal.png", zoom=0.56)
+image huizhou worried = Transform("images/huizhou_worried.png", zoom=0.56)
+image linlan normal = Transform("images/linlan_normal.png", zoom=0.56)
+image linlan smile = Transform("images/linlan_smile.png", zoom=0.56)
 
 
 ################################################################################
@@ -42,28 +43,42 @@ image linlan smile = Transform("images/linlan_smile.png", zoom=0.64)
 
 ## 站位
 transform pos_left:
-    xalign 0.18
+    xalign 0.04
     yalign 1.0
 
 transform pos_right:
-    xalign 0.82
+    xalign 0.96
     yalign 1.0
 
 ## 滑入动画：角色从屏幕外缓动进场
 transform enter_left:
     xalign -0.3
     yalign 1.0
-    ease 0.6 xalign 0.18
+    ease 0.6 xalign 0.04
 
 transform enter_right:
     xalign 1.3
     yalign 1.0
-    ease 0.6 xalign 0.82
+    ease 0.6 xalign 0.96
 
 ## 灯塔点亮时的暖色闪光
 define flash_lamp = Fade(0.2, 0.0, 1.0, color="#fff1c0")
 ## 场景切换使用较慢的淡入淡出
-define slow_fade = Fade(0.8, 0.3, 0.8)
+define slow_fade = Fade(0.8, 0.3, 0.8, color="#0b1622")
+## 夜雾色淡入淡出：场景切换与结局卡片使用
+define fog_fade = Fade(0.7, 0.25, 0.7, color="#0b1622")
+
+## 贴近地面的雾气：缓慢向左漂移（原生 ATL）。放在立绘之前 show，所以立绘始终在雾的上层。
+image fog_drift:
+    "gui/fx/fx_fog_a.png"
+    ## show 语句的默认变换带有 xanchor 0.5 / yanchor 1.0，这里必须显式改回左上角锚点
+    anchor (0.0, 0.0)
+    zoom 2.0
+    alpha 0.34
+    xpos 0
+    ypos 360
+    linear 80 xpos -1280
+    repeat
 
 
 ################################################################################
@@ -99,15 +114,21 @@ init python:
 ## 信封预览界面：用 show screen / hide screen 控制，方便以后扩展成物品栏。
 screen letter_card(title, body):
     zorder 50
-    frame:
-        align (0.5, 0.36)
-        padding (44, 30)
-        background Solid("#eadcb8")
-        xsize 620
+    fixed:
+        at letter_in
+        align (0.5, 0.3)
+        xysize (660, 280)
+        add "gui/letter_paper.png"
         vbox:
-            spacing 12
-            text title size 30 color "#3a2c1c" xalign 0.5
-            text body size 24 color "#4d3b28" xalign 0.5 text_align 0.5
+            align (0.5, 0.5)
+            spacing 14
+            text title size 36 color "#2b2a30" xalign 0.5
+            text body size 28 color "#4a3f33" xalign 0.5 text_align 0.5 xmaximum 560
+
+transform letter_in:
+    alpha 0.0
+    yoffset 20
+    ease 0.35 alpha 1.0 yoffset 0
 
 
 ################################################################################
@@ -127,6 +148,7 @@ label start:
     "雾港的黄昏来得很早。"
 
     scene bg dock
+    show fog_drift
     with slow_fade
 
     "傍晚六点，雾从海面漫上栈桥，把一盏盏路灯吞成模糊的光斑。"
@@ -206,6 +228,7 @@ label ch1_dock:
 label ch2_alley:
 
     scene bg alley
+    show fog_drift
     with slow_fade
 
     show huizhou normal at pos_left
@@ -270,6 +293,7 @@ label ch2_alley:
 label ch3_lighthouse:
 
     scene bg lighthouse
+    show fog_drift
     with slow_fade
 
     show huizhou normal at pos_left
@@ -341,7 +365,9 @@ label ending_true:
 
     "她提着灯登上塔梯。几分钟后，塔顶的灯室里亮起一团暖光，光柱劈开浓雾，扫过整座港口。"
 
-    scene bg lighthouse with flash_lamp
+    scene bg lighthouse
+    show fog_drift
+    with flash_lamp
 
     show huizhou normal at pos_left
     show linlan smile at pos_right
@@ -408,18 +434,25 @@ label ending_miss:
     return
 
 
-## 结局卡片：显示标题、记录已达成结局，然后返回调用处。
+## 结局卡片：显示结局名与已解锁进度，点击“返回标题”（或任意处 / 回车）后回到调用处。
+## 数据：结局序号、名称、尾声一句、标题颜色、压暗遮罩、灯塔光束强度
+define ending_info = {
+    "true": ("01", "结局一", "灯塔回信", "午夜钟响，灯光第一次越过了整座雾港。", "#f6d58e", "#08101ab0", 1.0),
+    "half": ("02", "结局二", "半盏灯火", "半盏灯火亮着，另一半真相仍在雾里。", "#d8ecee", "#08101acc", 0.45),
+    "miss": ("03", "结局三", "雾中错过", "那封信仍在雾里，等着不知名的收信人。", "#8fb6c4", "#08101aee", 0.0),
+}
+
 label show_ending(title, key):
 
-    scene black
-    with slow_fade
-
     $ persistent.endings_seen.add(key)
+    $ quick_menu = False
 
-    centered "{size=+10}[title]{/size}"
+    scene bg lighthouse
+    show fog_drift
+    with fog_fade
 
-    centered "已解锁结局 [len(persistent.endings_seen)] / 3"
+    call screen ending_card(title, key)
 
-    centered "—— 《雾港来信》V0.1 完 ——"
+    $ quick_menu = True
 
     return

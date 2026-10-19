@@ -10,7 +10,8 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GAME = os.path.join(ROOT, "game")
-SCRIPTS = ["script.rpy", "tests.rpy"]  # 只检查剧情与测试脚本；screens/gui 为官方模板
+SCRIPTS = ["script.rpy", "tests.rpy"]  # 只检查剧情与测试脚本；screens / gui / ending_card 为界面代码，由 renpy lint 检查
+UI_FILES = ["screens.rpy", "gui.rpy", "ending_card.rpy"]  # 仅用来收集 default 变量声明
 
 errors = []
 
@@ -42,7 +43,7 @@ for n, i, l in all_lines:
         labels.add(m.group(1))
 labels |= {"start", "main_menu_screen"}  # 引擎内置
 for n, i, l in all_lines:
-    for m in re.finditer(r"^\s*(?:jump|call)\s+([A-Za-z_]\w*)", l):
+    for m in re.finditer(r"^\s*(?:jump|call)\s+(?!screen\b|expression\b)([A-Za-z_]\w*)", l):
         if m.group(1) not in labels:
             err(f"{n}:{i}: 跳转到未定义的 label '{m.group(1)}'")
     for m in re.finditer(r'Jump\("(\w+)"\)', l):
@@ -52,6 +53,9 @@ for n, i, l in all_lines:
 # 3. 图片：image 定义指向的文件必须存在；scene/show 使用的图像必须已定义
 defined = set()
 for n, i, l in all_lines:
+    m = re.match(r'\s*image\s+([\w ]+?)\s*:\s*$', l)
+    if m:
+        defined.add(m.group(1).strip())  # ATL 图像（如 fog_drift），其中的图片文件由 renpy lint 检查
     m = re.match(r'\s*image\s+([\w ]+?)\s*=\s*(.*)$', l)
     if m:
         defined.add(m.group(1).strip())
@@ -95,6 +99,12 @@ for n, i, l in all_lines:
     m = re.match(r"\s*default\s+([\w.]+)\s*=", l)
     if m:
         defaults.add(m.group(1))
+for n in UI_FILES:
+    if os.path.exists(os.path.join(GAME, n)):
+        for l in read(n):
+            m = re.match(r"\s*default\s+([\w.]+)\s*=", l)
+            if m:
+                defaults.add(m.group(1))
 in_python = False
 for n, i, l in all_lines:
     if l.strip() and not l.startswith(" "):

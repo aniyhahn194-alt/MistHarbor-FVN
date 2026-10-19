@@ -1,0 +1,22 @@
+{
+  "ui": "v02",
+  "viewport": "desktop",
+  "url": "http://127.0.0.1:8002/index.html",
+  "results": [
+    {
+      "name": "v02/desktop 分支 A_true（选项 1/1/1）",
+      "ok": true,
+      "detail": "到达结局卡片=1（期望 1）；回到主菜单=true；页面错误/失败请求=0；首次到主菜单 14.5s"
+    },
+    {
+      "name": "v02/desktop 分支 B_half（选项 2/2/2）",
+      "ok": true,
+      "detail": "到达结局卡片=2（期望 2）；回到主菜单=true；页面错误/失败请求=0；首次到主菜单 14.6s"
+    },
+    {
+      "name": "v02/desktop 分支 C_miss（选项 3/3/3）",
+      "ok": true,
+      "detail": "到达结局卡片=3（期望 3）；回到主菜单=true；页面错误/失败请求=0；首次到主菜单 14.5s"
+    }
+  ]
+}
